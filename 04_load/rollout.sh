@@ -39,7 +39,7 @@ start_gpfdist()
 {
 	stop_gpfdist
 	sleep 1
-	if [ "$VERSION" == "gpdb_6" ]; then
+	if [ "$VERSION" == "gpdb_6" -o "$VERSION" == "gpdb_7" ]; then
 		for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
 			CHILD=$(echo $i | awk -F '|' '{print $1}')
 			EXT_HOST=$(echo $i | awk -F '|' '{print $2}')
