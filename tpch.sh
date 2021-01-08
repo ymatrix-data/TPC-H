@@ -116,6 +116,12 @@ check_variables()
 		echo "RUN_MULTI_USER_REPORT=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
+	#09
+	local count=$(grep "GREENPLUM_PATH" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "GREENPLUM_PATH=\"/your_path/greenplum_path.sh\"" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
 
 	if [ "$new_variable" -gt "0" ]; then
 		echo "There are new variables in the tpch_variables.sh file.  Please review to ensure the values are correct and then re-run this script."
@@ -264,12 +270,14 @@ echo_variables()
 # Body
 ##################################################################################################################################################
 
-check_user
+#check_user
 check_variables
 yum_installs
-repo_init
+#repo_init
 script_check
 echo_variables
 
-su --session-command="cd \"$INSTALL_DIR/$REPO\"; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS" $ADMIN_USER
+export GREENPLUM_PATH=$GREENPLUM_PATH
+
+cd $INSTALL_DIR/$REPO; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH
 
