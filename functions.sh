@@ -23,21 +23,6 @@ get_version()
 {
 	#need to call source_bashrc first
 	VERSION=$(psql -v ON_ERROR_STOP=1 -t -A -c "SELECT CASE WHEN POSITION ('Greenplum Database 4.3' IN version) > 0 THEN 'gpdb_4_3' WHEN POSITION ('Greenplum Database 5' IN version) > 0 THEN 'gpdb_5' WHEN POSITION ('Greenplum Database 6' IN version) > 0 THEN 'gpdb_6' WHEN POSITION ('Greenplum Database 7' IN version) > 0 THEN 'gpdb_7' ELSE 'postgresql' END FROM version();") 
-	if [[ "$VERSION" == *"gpdb"* ]]; then
-		quicklz_test=$(psql -v ON_ERROR_STOP=1 -t -A -c "SELECT COUNT(*) FROM pg_compression WHERE compname = 'quicklz'")
-		if [ "$quicklz_test" -eq "1" ]; then
-			SMALL_STORAGE="appendonly=true, orientation=column"
-			MEDIUM_STORAGE="appendonly=true, orientation=column"
-			LARGE_STORAGE="appendonly=true, orientation=column, compresstype=quicklz"
-		else SMALL_STORAGE="appendonly=true, orientation=column"
-			MEDIUM_STORAGE="appendonly=true, orientation=column"
-			LARGE_STORAGE="appendonly=true, orientation=column, compresstype=zlib, compresslevel=4"
-		fi
-	else
-		SMALL_STORAGE=""
-		MEDIUM_STORAGE=""
-		LARGE_STORAGE=""
-	fi
 }
 source_bashrc()
 {

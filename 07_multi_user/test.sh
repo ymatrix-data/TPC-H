@@ -7,6 +7,7 @@ source $PWD/../functions.sh
 
 session_id=$1
 EXPLAIN_ANALYZE=$2
+OPTIMIZER=$3
 
 if [[ "$session_id" == "" || "$EXPLAIN_ANALYZE" == "" ]]; then
 	echo "Error: you must provide the session id and explain analyze true/false as parameters."
@@ -51,13 +52,13 @@ for i in $(ls $sql_dir/*.sql); do
 
 	if [ "$EXPLAIN_ANALYZE" == "false" ]; then
 		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -f $i | wc -l"
-		tuples=$(psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -f $i | wc -l; exit ${PIPESTATUS[0]})
+		tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -f $i | wc -l; exit ${PIPESTATUS[0]})
 		tuples=$(($tuples-1))
 	else
 		myfilename=$(basename $i)
 		mylogfile=$PWD/../log/"$session_id"".""$myfilename"".multi.explain_analyze.log"
 		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -f $i"
-		psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -f $i > $mylogfile
+		PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -f $i > $mylogfile
 		tuples="0"
 	fi
 		

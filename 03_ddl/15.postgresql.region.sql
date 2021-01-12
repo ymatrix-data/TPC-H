@@ -3,4 +3,3 @@ CREATE TABLE tpch.region
 R_NAME CHAR(25),
 R_COMMENT VARCHAR(152),
 dummy text);
-ALTER TABLE tpch.region ADD PRIMARY KEY (r_regionkey);

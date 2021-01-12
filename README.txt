@@ -2,8 +2,9 @@
 TPC-H benchmark scripts for Greenplum and PostgreSQL databases.
 ########################################################################################
 Supported versions:
-Greenplum 4.3, 5.*, 6.*
-Open Source Greenplum 5.*, 6.*
+MatrixDB 2.*, 3.*
+Greenplum 4.3, 5.*, 6.*, 7.*
+Open Source Greenplum 5.*, 6.*, 7.*
 Beta: PostgreSQL 10.*
 
 ########################################################################################
@@ -31,25 +32,14 @@ Table storage is defined in functions.sh and is configured for optimal performan
 Prerequisites
 ########################################################################################
 1. Supported Database installed and running
-2. Connectivity is possible to the MASTER_HOST and from the Data Nodes / Segment Hosts
-3. Root access
-
-########################################################################################
-Installation
-########################################################################################
-1. ssh to the master host with root
-ssh root@mdw
-
-2. Download the tpch.sh file
-curl https://raw.githubusercontent.com/pivotalguru/TPC-H/master/tpch.sh > tpch.sh
-chmod 755 tpch.sh
+2. Connectivity is possible to the MASTER_HOST
 
 ########################################################################################
 Variables and Configuration
 ########################################################################################
-By default, the installation will create the scripts in /pivotalguru/TPC-H on the 
-Master host.  Variables can be changed by editing the dynamically configured 
-/root/tpch_variables.sh file that is created the first time tpch.sh is run.  
+By default, the installation will create the scripts in the Master host. 
+Variables can be changed by editing the dynamically configured tpch_variables.sh file
+that is created the first time tpch.sh is run.  
 
 Also by default, TPC-H files are generated on each Segment Host / Data Node in the 
 Segement's PGDATA/pivotalguru directory.  If there isn't enough space in this directory

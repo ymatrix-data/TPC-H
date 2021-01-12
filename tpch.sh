@@ -17,11 +17,6 @@ check_variables()
 		touch $PWD/$MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
-	local count=$(grep "REPO=" $MYVAR | wc -l)
-	if [ "$count" -eq "0" ]; then
-		echo "REPO=\"TPC-H\"" >> $MYVAR
-		new_variable=$(($new_variable + 1))
-	fi
 	local count=$(grep "REPO_URL=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "REPO_URL=\"https://github.com/pivotalguru/TPC-H\"" >> $MYVAR
@@ -29,12 +24,14 @@ check_variables()
 	fi
 	local count=$(grep "ADMIN_USER=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "ADMIN_USER=\"gpadmin\"" >> $MYVAR
+		ADMIN_USER=$(whoami)
+		echo "ADMIN_USER=\"$ADMIN_USER\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "INSTALL_DIR=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "INSTALL_DIR=\"/pivotalguru\"" >> $MYVAR
+		INSTALL_DIR=$(dirname $(readlink -f $0))
+		echo "INSTALL_DIR=\"$INSTALL_DIR\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "EXPLAIN_ANALYZE=" $MYVAR | wc -l)
@@ -54,7 +51,7 @@ check_variables()
 	fi
 	local count=$(grep "GEN_DATA_SCALE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "GEN_DATA_SCALE=\"3000\"" >> $MYVAR
+		echo "GEN_DATA_SCALE=\"1\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "SINGLE_USER_ITERATIONS" $MYVAR | wc -l)
@@ -65,13 +62,13 @@ check_variables()
 	#00
 	local count=$(grep "RUN_COMPILE_TPCH" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "RUN_COMPILE_TPCH=\"false\"" >> $MYVAR
+		echo "RUN_COMPILE_TPCH=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#01
 	local count=$(grep "RUN_GEN_DATA" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "RUN_GEN_DATA=\"false\"" >> $MYVAR
+		echo "RUN_GEN_DATA=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#02
@@ -119,7 +116,31 @@ check_variables()
 	#09
 	local count=$(grep "GREENPLUM_PATH" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "GREENPLUM_PATH=\"/your_path/greenplum_path.sh\"" >> $MYVAR
+		echo "GREENPLUM_PATH=\"/$GPHOME/greenplum_path.sh\"" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
+	#10
+	local count=$(grep "SMALL_STORAGE" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "SMALL_STORAGE=\"\" # For region/nation, empty means heap" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
+	#11
+	local count=$(grep "MEDIUM_STORAGE" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "MEDIUM_STORAGE=\"\" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), empty means heap" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
+	#12
+	local count=$(grep "LARGE_STORAGE" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "LARGE_STORAGE=\"\" # For lineitem, eg: with(appendonly=true, orientation=column, compresstype=1z4), empty means heap" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
+	#13
+	local count=$(grep "OPTIMIZER" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "OPTIMIZER=\"off\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 
@@ -278,6 +299,5 @@ script_check
 echo_variables
 
 export GREENPLUM_PATH=$GREENPLUM_PATH
-
-cd $INSTALL_DIR/$REPO; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH
+cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER
 

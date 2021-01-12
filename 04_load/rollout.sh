@@ -5,6 +5,8 @@ PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 source_bashrc
 
+GREENPLUM_PATH=$6
+
 step=load
 init_log $step
 
@@ -32,7 +34,7 @@ stop_gpfdist()
 {
 	echo "stop gpfdist on all ports"
 	for i in $(cat $PWD/../segment_hosts.txt); do
-		ssh -n -f $i "bash -c 'cd ~/; ./stop_gpfdist.sh'"
+		ssh -n -f $i "bash -c 'source $GREENPLUM_PATH; cd ~/; ./stop_gpfdist.sh'"
 	done
 }
 start_gpfdist()
@@ -47,7 +49,7 @@ start_gpfdist()
 			GEN_DATA_PATH=$GEN_DATA_PATH/pivotalguru
 			PORT=$(($GPFDIST_PORT + $CHILD))
 			echo "executing on $EXT_HOST ./start_gpfdist.sh $PORT $GEN_DATA_PATH"
-			ssh -n -f $EXT_HOST "bash -c 'cd ~/; ./start_gpfdist.sh $PORT $GEN_DATA_PATH'"
+			ssh -n -f $EXT_HOST "bash -c 'source $GREENPLUM_PATH; cd ~/; ./start_gpfdist.sh $PORT $GEN_DATA_PATH'"
 			sleep 1
 		done
 	else
@@ -58,7 +60,7 @@ start_gpfdist()
 			GEN_DATA_PATH=$GEN_DATA_PATH/pivotalguru
 			PORT=$(($GPFDIST_PORT + $CHILD))
 			echo "executing on $EXT_HOST ./start_gpfdist.sh $PORT $GEN_DATA_PATH"
-			ssh -n -f $EXT_HOST "bash -c 'cd ~/; ./start_gpfdist.sh $PORT $GEN_DATA_PATH'"
+			ssh -n -f $EXT_HOST "bash -c 'source $GREENPLUM_PATH; cd ~/; ./start_gpfdist.sh $PORT $GEN_DATA_PATH'"
 			sleep 1
 		done
 	fi

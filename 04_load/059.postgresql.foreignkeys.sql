@@ -1,3 +1,11 @@
+ALTER TABLE tpch.nation ADD PRIMARY KEY (n_nationkey);
+ALTER TABLE tpch.region ADD PRIMARY KEY (r_regionkey);
+ALTER TABLE tpch.customer ADD PRIMARY KEY (c_custkey);
+ALTER TABLE tpch.part ADD PRIMARY KEY (p_partkey);
+ALTER TABLE tpch.supplier ADD PRIMARY KEY (s_suppkey);
+ALTER TABLE tpch.partsupp ADD PRIMARY KEY (ps_partkey, ps_suppkey);
+ALTER TABLE tpch.orders ADD PRIMARY KEY (o_orderkey);
+ALTER TABLE tpch.lineitem ADD PRIMARY KEY (l_orderkey, l_linenumber);
 ALTER TABLE supplier ADD CONSTRAINT supplier_nation_fk FOREIGN KEY (s_nationkey) REFERENCES nation (n_nationkey);
 ALTER TABLE partsupp ADD CONSTRAINT partsupp_part_fk FOREIGN KEY (ps_partkey) REFERENCES part (p_partkey);
 ALTER TABLE partsupp ADD CONSTRAINT partsupp_supplier_fk FOREIGN KEY (ps_suppkey) REFERENCES supplier (s_suppkey);
