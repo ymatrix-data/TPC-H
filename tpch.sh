@@ -128,13 +128,13 @@ check_variables()
 	#11
 	local count=$(grep "MEDIUM_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "MEDIUM_STORAGE=\"\" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), empty means heap" >> $MYVAR
+		echo "MEDIUM_STORAGE=\"with(appendonly=true, orientation=column)\" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), empty means heap" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#12
 	local count=$(grep "LARGE_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "LARGE_STORAGE=\"\" # For lineitem, eg: with(appendonly=true, orientation=column, compresstype=1z4), empty means heap" >> $MYVAR
+		echo "LARGE_STORAGE=\"with(appendonly=true, orientation=column,  compresstype=zstd, COMPRESSLEVEL=1)\" # For lineitem, eg: with(appendonly=true, orientation=column, compresstype=1z4), empty means heap" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#13
