@@ -143,6 +143,12 @@ check_variables()
 		echo "OPTIMIZER=\"off\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
+	#14
+	local count=$(grep "GEN_DATA_DIR" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "GEN_DATA_DIR=\"$PWD/generated\"" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
 
 	if [ "$new_variable" -gt "0" ]; then
 		echo "There are new variables in the tpch_variables.sh file.  Please review to ensure the values are correct and then re-run this script."
@@ -287,12 +293,20 @@ echo_variables()
 	echo ""
 }
 
+check_dir(){
+  if [ -d $GEN_DATA_DIR ] ; then
+    rm -rf $GEN_DATA_DIR
+  fi
+  mkdir $GEN_DATA_DIR
+}
+
 ##################################################################################################################################################
 # Body
 ##################################################################################################################################################
 
 #check_user
 check_variables
+check_dir
 yum_installs
 #repo_init
 script_check
