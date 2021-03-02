@@ -50,6 +50,7 @@ make_tpc
 create_hosts_file
 copy_queries
 copy_tpc
+clean_tpc
 log
 
 end_step $step
