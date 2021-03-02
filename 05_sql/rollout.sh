@@ -11,6 +11,7 @@ RANDOM_DISTRIBUTION=$3
 MULTI_USER_COUNT=$4
 SINGLE_USER_ITERATIONS=$5
 OPTIMIZER=${10}
+GEN_DATA_DIR=${11}
 
 if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
 	echo "You must provide the scale as a parameter in terms of Gigabytes, true/false to run queries with EXPLAIN ANALYZE option, true/false to use random distrbution, multi-user count, and the number of sql iterations."
@@ -21,7 +22,7 @@ fi
 step=sql
 init_log $step
 
-rm -f $PWD/../log/*single.explain_analyze.log
+rm -f $GEN_DATA_DIR/log/*single.explain_analyze.log
 for i in $(ls $PWD/*.tpch.*.sql); do
 	for x in $(seq 1 $SINGLE_USER_ITERATIONS); do
 		id=`echo $i | awk -F '.' '{print $1}'`
@@ -33,7 +34,7 @@ for i in $(ls $PWD/*.tpch.*.sql); do
 			tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -f $i | wc -l; exit ${PIPESTATUS[0]})
 		else
 			myfilename=$(basename $i)
-			mylogfile=$PWD/../log/$myfilename.single.explain_analyze.log
+			mylogfile=$GEN_DATA_DIR/log/$myfilename.single.explain_analyze.log
 			echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -f $i > $mylogfile"
 			PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -f $i > $mylogfile
 			tuples="0"

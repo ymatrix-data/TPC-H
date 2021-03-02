@@ -50,12 +50,12 @@ source_bashrc()
 }
 init_log()
 {
-	if [ -f $LOCAL_PWD/log/end_$1.log ]; then
+	if [ -f $GEN_DATA_DIR/log/end_$1.log ]; then
 		exit 0
 	fi
 
 	logfile=rollout_$1.log
-	rm -f $LOCAL_PWD/log/$logfile
+	rm -f $GEN_DATA_DIR/log/$logfile
 }
 start_log()
 {
@@ -93,12 +93,12 @@ log()
 		tuples="0"
 	fi
 
-	printf "$id|$schema_name.$table_name|$tuples|%02d:%02d:%02d.%03d\n" "$((S/3600%24))" "$((S/60%60))" "$((S%60))" "${M}" >> $LOCAL_PWD/log/$logfile
+	printf "$id|$schema_name.$table_name|$tuples|%02d:%02d:%02d.%03d\n" "$((S/3600%24))" "$((S/60%60))" "$((S%60))" "${M}" >> $GEN_DATA_DIR/log/$logfile
 }
 end_step()
 {
 	local logfile=end_$1.log
-	touch $LOCAL_PWD/log/$logfile
+	touch $GEN_DATA_DIR/log/$logfile
 }
 create_hosts_file()
 {

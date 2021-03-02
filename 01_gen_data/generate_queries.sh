@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#GEN_DATA_DIR=${11}
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 source_bashrc
