@@ -8,6 +8,7 @@ RANDOM_DISTRIBUTION=$3
 MULTI_USER_COUNT=$4
 SINGLE_USER_ITERATIONS=$5
 OPTIMIZER=${10}
+GEN_DATA_DIR=${11}
 
 if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
 	echo "You must provide the scale as a parameter in terms of Gigabytes, true/false to run queries with EXPLAIN ANALYZE option, true/false to use random distrbution, multi-user count, and the number of sql iterations."
@@ -32,15 +33,15 @@ get_psql_count()
 
 get_file_count()
 {
-	file_count=$(ls $PWD/../log/end_testing* 2> /dev/null | wc -l)
+	file_count=$(ls $GEN_DATA_DIR/log/end_testing* 2> /dev/null | wc -l)
 }
 
 get_file_count
 if [ "$file_count" -ne "$MULTI_USER_COUNT" ]; then
-	rm -f $PWD/../log/end_testing_*.log
-	rm -f $PWD/../log/testing*.log
-	rm -f $PWD/../log/rollout_testing_*.log
-	rm -f $PWD/../log/*multi.explain_analyze.log
+	rm -f $GEN_DATA_DIR/log/end_testing_*.log
+	rm -f $GEN_DATA_DIR/log/testing*.log
+	rm -f $GEN_DATA_DIR/log/rollout_testing_*.log
+	rm -f $GEN_DATA_DIR/log/*multi.explain_analyze.log
 
 	#Create queries
 	echo "cd $PWD/queries"
@@ -60,9 +61,9 @@ if [ "$file_count" -ne "$MULTI_USER_COUNT" ]; then
 	cd ..
 
 	for x in $(seq 1 $MULTI_USER_COUNT); do
-		session_log=$PWD/../log/testing_session_$x.log
+		session_log=$GEN_DATA_DIR/log/testing_session_$x.log
 		echo "$PWD/test.sh $x $EXPLAIN_ANALYZE"
-		$PWD/test.sh $x $EXPLAIN_ANALYZE $OPTIMIZER> $session_log 2>&1 < $session_log &
+		$PWD/test.sh $x $EXPLAIN_ANALYZE $OPTIMIZER $GEN_DATA_DIR> $session_log 2>&1 < $session_log &
 	done
 
 	sleep 60

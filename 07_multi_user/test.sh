@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-
+GEN_DATA_DIR=${4}
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 
@@ -56,7 +56,7 @@ for i in $(ls $sql_dir/*.sql); do
 		tuples=$(($tuples-1))
 	else
 		myfilename=$(basename $i)
-		mylogfile=$PWD/../log/"$session_id"".""$myfilename"".multi.explain_analyze.log"
+		mylogfile=$GEN_DATA_DIR/log/"$session_id"".""$myfilename"".multi.explain_analyze.log"
 		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -f $i"
 		PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -f $i > $mylogfile
 		tuples="0"
