@@ -40,10 +40,17 @@ copy_tpc()
 	done
 }
 
+clean_tpc(){
+  pushd $PWD/dbgen
+    make clean
+  popd
+}
+
 make_tpc
 create_hosts_file
 copy_queries
 copy_tpc
+clean_tpc
 log
 
 end_step $step
