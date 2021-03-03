@@ -11,6 +11,7 @@ RANDOM_DISTRIBUTION=$3
 MULTI_USER_COUNT=$4
 SINGLE_USER_ITERATIONS=$5
 GEN_DATA_DIR=${11}
+EXT_HOST_DATA_DIR=${12}
 
 if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
 	echo "You must provide the scale as a parameter in terms of Gigabytes, true/false to run queries with EXPLAIN ANALYZE option, true/false to use random distrbution, multi-user count, and the number of sql iterations."
@@ -32,8 +33,8 @@ copy_generate_data()
 {
 	#copy generate_data.sh to ~/
 	for i in $(cat $PWD/../segment_hosts.txt); do
-		echo "copy generate_data.sh to $i:$ADMIN_HOME"
-		scp $PWD/generate_data.sh $i:$ADMIN_HOME/
+		echo "copy generate_data.sh to $i:$EXT_HOST_DATA_DIR"
+		scp $PWD/generate_data.sh $i:$EXT_HOST_DATA_DIR/
 	done
 }
 gen_data()
@@ -52,8 +53,8 @@ gen_data()
 				EXT_HOST=$(echo $i | awk -F '|' '{print $2}')
 				GEN_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
 				GEN_DATA_PATH="$GEN_DATA_PATH""/pivotalguru"
-				echo "ssh -n -f $EXT_HOST \"bash -c 'cd ~/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'\""
-				ssh -n -f $EXT_HOST "bash -c 'cd ~/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'"
+				echo "ssh -n -f $EXT_HOST \"bash -c 'cd $EXT_HOST_DATA_DIR/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'\""
+				ssh -n -f $EXT_HOST "bash -c 'cd $EXT_HOST_DATA_DIR/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'"
 			done
 		else
 			for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select row_number() over(), g.hostname, p.fselocation as path from gp_segment_configuration g join pg_filespace_entry p on g.dbid = p.fsedbid join pg_tablespace t on t.spcfsoid = p.fsefsoid where g.content >= 0 and g.role = 'p' and t.spcname = 'pg_default' order by 1, 2, 3"); do
@@ -61,8 +62,8 @@ gen_data()
 				EXT_HOST=$(echo $i | awk -F '|' '{print $2}')
 				GEN_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
 				GEN_DATA_PATH="$GEN_DATA_PATH""/pivotalguru"
-				echo "ssh -n -f $EXT_HOST \"bash -c 'cd ~/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'\""
-				ssh -n -f $EXT_HOST "bash -c 'cd ~/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'"
+				echo "ssh -n -f $EXT_HOST \"bash -c 'cd $EXT_HOST_DATA_DIR/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'\""
+				ssh -n -f $EXT_HOST "bash -c 'cd $EXT_HOST_DATA_DIR/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'"
 			done
 		fi
 	else
@@ -79,8 +80,8 @@ gen_data()
 		for x in $(seq 1 $PARALLEL); do
 			CHILD=$(($CHILD + 1))
 			GEN_DATA_PATH="$PGDATA""/pivotalguru_""$CHILD"
-			echo "ssh -n -f $EXT_HOST \"bash -c 'cd ~/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'\""
-			ssh -n -f $EXT_HOST "bash -c 'cd ~/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'"
+			echo "ssh -n -f $EXT_HOST \"bash -c 'cd $EXT_HOST_DATA_DIR/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'\""
+			ssh -n -f $EXT_HOST "bash -c 'cd $EXT_HOST_DATA_DIR/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'"
 		done
 	fi
 
