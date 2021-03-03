@@ -48,8 +48,17 @@ source_bashrc()
 	source ~/$startup_file || true
 	echo ""
 }
+check_log_path()
+{
+  echo "[DEBUG]: $GEN_DATA_DIR"
+  if [[ "$GEN_DATA_DIR" == "" ]]; then
+    echo "GEN_DATA_DIR log not set"
+    exit 1
+  fi
+}
 init_log()
 {
+#  check_log_path
 	if [ -f $GEN_DATA_DIR/log/end_$1.log ]; then
 		exit 0
 	fi
@@ -59,6 +68,7 @@ init_log()
 }
 start_log()
 {
+#  check_log_path
 	if [ "$OSVERSION" == "Linux" ]; then
 		T="$(date +%s%N)"
 	else
@@ -67,6 +77,7 @@ start_log()
 }
 log()
 {
+#  check_log_path
 	#duration
 	if [ "$OSVERSION" == "Linux" ]; then
 		T="$(($(date +%s%N)-T))"
@@ -97,6 +108,7 @@ log()
 }
 end_step()
 {
+#  check_log_path
 	local logfile=end_$1.log
 	touch $GEN_DATA_DIR/log/$logfile
 }
