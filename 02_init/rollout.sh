@@ -3,7 +3,6 @@ set -e
 
 GEN_DATA_DIR=${11}
 
-gpconfig -c default_statistics_target -v 100
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 source_bashrc
