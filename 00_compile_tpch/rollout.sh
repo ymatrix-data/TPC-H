@@ -2,6 +2,7 @@
 set -e
 
 GEN_DATA_DIR=${11}
+EXT_HOST_DATA_DIR=${12}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -37,8 +38,8 @@ copy_tpc()
 
 	#copy the compiled dbgen program to the segment hosts
 	for i in $(cat $PWD/../segment_hosts.txt); do
-		echo "copy tpch binaries to $i:$ADMIN_HOME"
-		scp dbgen/dbgen dbgen/dists.dss $i:$ADMIN_HOME/
+		echo "copy tpch binaries to $i:$EXT_HOST_DATA_DIR"
+		scp dbgen/dbgen dbgen/dists.dss $i:$EXT_HOST_DATA_DIR/
 	done
 }
 

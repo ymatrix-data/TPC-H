@@ -2,6 +2,7 @@
 set -e
 
 GEN_DATA_DIR=${11}
+EXT_HOST_DATA_DIR=${12}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -28,15 +29,15 @@ copy_script()
 {
 	echo "copy the start and stop scripts to the hosts in the cluster"
 	for i in $(cat $PWD/../segment_hosts.txt); do
-		echo "scp start_gpfdist.sh stop_gpfdist.sh $ADMIN_USER@$i:$ADMIN_HOME/"
-		scp $PWD/start_gpfdist.sh $PWD/stop_gpfdist.sh $ADMIN_USER@$i:$ADMIN_HOME/
+		echo "scp start_gpfdist.sh stop_gpfdist.sh $ADMIN_USER@$i:$EXT_HOST_DATA_DIR//"
+		scp $PWD/start_gpfdist.sh $PWD/stop_gpfdist.sh $ADMIN_USER@$i:$EXT_HOST_DATA_DIR/
 	done
 }
 stop_gpfdist()
 {
 	echo "stop gpfdist on all ports"
 	for i in $(cat $PWD/../segment_hosts.txt); do
-		ssh -n -f $i "bash -c 'source $GREENPLUM_PATH; cd ~/; ./stop_gpfdist.sh'"
+		ssh -n -f $i "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./stop_gpfdist.sh'"
 	done
 }
 start_gpfdist()
@@ -51,7 +52,7 @@ start_gpfdist()
 			GEN_DATA_PATH=$GEN_DATA_PATH/pivotalguru
 			PORT=$(($GPFDIST_PORT + $CHILD))
 			echo "executing on $EXT_HOST ./start_gpfdist.sh $PORT $GEN_DATA_PATH"
-			ssh -n -f $EXT_HOST "bash -c 'source $GREENPLUM_PATH; cd ~/; ./start_gpfdist.sh $PORT $GEN_DATA_PATH'"
+			ssh -n -f $EXT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./start_gpfdist.sh $PORT $GEN_DATA_PATH'"
 			sleep 1
 		done
 	else
@@ -62,7 +63,7 @@ start_gpfdist()
 			GEN_DATA_PATH=$GEN_DATA_PATH/pivotalguru
 			PORT=$(($GPFDIST_PORT + $CHILD))
 			echo "executing on $EXT_HOST ./start_gpfdist.sh $PORT $GEN_DATA_PATH"
-			ssh -n -f $EXT_HOST "bash -c 'source $GREENPLUM_PATH; cd ~/; ./start_gpfdist.sh $PORT $GEN_DATA_PATH'"
+			ssh -n -f $EXT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./start_gpfdist.sh $PORT $GEN_DATA_PATH'"
 			sleep 1
 		done
 	fi
