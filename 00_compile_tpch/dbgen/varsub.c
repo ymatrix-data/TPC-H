@@ -41,7 +41,11 @@
 */
 #include <stdio.h>
 #ifndef _POSIX_SOURCE
-#include <malloc.h>
+    #if __APPLE__
+        #include <malloc/malloc.h>
+    #else
+        #include <malloc.h>
+    #endif
 #endif /* POSIX_SOURCE */
 #if (defined(_POSIX_)||!defined(WIN32))
 #include <unistd.h>

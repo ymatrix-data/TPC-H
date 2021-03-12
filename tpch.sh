@@ -178,18 +178,18 @@ yum_installs()
 	echo ""
 	# Install git and gcc if not found
 	local YUM_INSTALLED=$(yum --help 2> /dev/null | wc -l)
-	local CURL_INSTALLED=$(gcc --help 2> /dev/null | wc -l)
+	local GCC_INSTALLED=$(gcc --help 2> /dev/null | wc -l)
 	local GIT_INSTALLED=$(git --help 2> /dev/null | wc -l)
 
 	if [ "$YUM_INSTALLED" -gt "0" ]; then
-		if [ "$CURL_INSTALLED" -eq "0" ]; then
+		if [ "$GCC_INSTALLED" -eq "0" ]; then
 			yum -y install gcc
 		fi
 		if [ "$GIT_INSTALLED" -eq "0" ]; then
 			yum -y install git
 		fi
 	else
-		if [ "$CURL_INSTALLED" -eq "0" ]; then
+		if [ "$GCC_INSTALLED" -eq "0" ]; then
 			echo "gcc not installed and yum not found to install it."
 			echo "Please install gcc and try again."
 			exit 1
