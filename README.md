@@ -1,20 +1,20 @@
-########################################################################################
-TPC-H benchmark scripts for Greenplum and PostgreSQL databases.
-########################################################################################
-Supported versions:
+
+## TPC-H benchmark scripts for Greenplum and PostgreSQL databases.
+
+###Supported versions:
 MatrixDB 2.*, 3.*
+
 Greenplum 4.3, 5.*, 6.*, 7.*
+
 Open Source Greenplum 5.*, 6.*, 7.*
+
 Beta: PostgreSQL 10.*
 
-########################################################################################
-TPC-H Information
-########################################################################################
+## TPC-H Information
 Based on version 2.17.1 of TPC-H.
 
-########################################################################################
-Query Options
-########################################################################################
+## Query Options
+
 You can have the queries execute with "EXPLAIN ANALYZE" in order to see exactly the 
 query plan used, the cost, the memory used, etc.  This is done in tpch_variables.sh
 like this:
@@ -23,20 +23,15 @@ EXPLAIN_ANALYZE="true"
 Note: The EXPLAIN ANALYZE option is only available when using the standard TPC-H 
 queries.
 
-########################################################################################
-Storage Options
-########################################################################################
+
+##Storage Options
 Table storage is defined in functions.sh and is configured for optimal performance. 
 
-########################################################################################
-Prerequisites
-########################################################################################
+## Prerequisites
 1. Supported Database installed and running
 2. Connectivity is possible to the MASTER_HOST
 
-########################################################################################
-Variables and Configuration
-########################################################################################
+## Variables and Configuration
 By default, the installation will create the scripts in the Master host. 
 Variables can be changed by editing the dynamically configured tpch_variables.sh file
 that is created the first time tpch.sh is run.  
@@ -46,15 +41,14 @@ Segement's PGDATA/pivotalguru directory.  If there isn't enough space in this di
 in each Segment, you can create a symbolic link to a drive location that does have 
 enough space.
 
-########################################################################################
-Execution
-########################################################################################
+
+
+## Execution
 1. Execute tpch.sh
 ./tpch.sh
 
-########################################################################################
-Notes
-########################################################################################
+
+## Notes
 - tpch_variables.sh file will be created with variables you can adjust
 - Files for the benchmark will be created in a sub-directory named pivotalguru located 
 in each segment directory on each segment host / data node.
@@ -63,9 +57,8 @@ volumes you have available.
 - Example of running tpch as root as a background process:
 nohup ./tpch.sh > tpch.log 2>&1 < tpch.log &
 
-########################################################################################
-TPC-H Minor Modifications
-########################################################################################
+
+## TPC-H Minor Modifications
 1. Query alternative 15 was used in favor of the original so it is easier to parse in
 these scripts.  Performance is essentially the same for both versions.
 2. Query 1 documentation doesn't match query provided by TPC.  Range is supposed to be
