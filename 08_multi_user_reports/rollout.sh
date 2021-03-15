@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+GEN_DATA_DIR=${11}
+
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 source_bashrc
@@ -26,7 +28,7 @@ done
 
 filename=$(ls $PWD/*.copy.*.sql)
 
-for i in $(ls $PWD/../log/rollout_testing_*); do
+for i in $(ls $GEN_DATA_DIR/log/rollout_testing_*); do
 	logfile="'""$i""'"
 	
         echo "psql -v ON_ERROR_STOP=1 -a -f $filename -v LOGFILE=\"$logfile\""

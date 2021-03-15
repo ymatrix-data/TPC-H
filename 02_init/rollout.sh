@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+GEN_DATA_DIR=${11}
+
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 source_bashrc
@@ -65,11 +67,11 @@ copy_config()
 {
 	echo "copy config files"
 	if [ "$MASTER_DATA_DIRECTORY" != "" ]; then
-		cp $MASTER_DATA_DIRECTORY/pg_hba.conf $PWD/../log/
-		cp $MASTER_DATA_DIRECTORY/postgresql.conf $PWD/../log/
+		cp $MASTER_DATA_DIRECTORY/pg_hba.conf $GEN_DATA_DIR/log/
+		cp $MASTER_DATA_DIRECTORY/postgresql.conf $GEN_DATA_DIR/log/
 	fi
 	#gp_segment_configuration
-	psql -v ON_ERROR_STOP=1 -q -A -t -c "SELECT * FROM gp_segment_configuration" -o $PWD/../log/gp_segment_configuration.txt
+	psql -v ON_ERROR_STOP=1 -q -A -t -c "SELECT * FROM gp_segment_configuration" -o $GEN_DATA_DIR/log/gp_segment_configuration.txt
 }
 set_search_path()
 {
@@ -80,7 +82,7 @@ set_search_path()
 get_version
 if [[ "$VERSION" == *"gpdb"* ]]; then
 	set_segment_bashrc
-	check_gucs
+#	check_gucs
 	copy_config
 fi
 set_search_path

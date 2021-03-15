@@ -128,19 +128,31 @@ check_variables()
 	#11
 	local count=$(grep "MEDIUM_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "MEDIUM_STORAGE=\"\" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), empty means heap" >> $MYVAR
+		echo "MEDIUM_STORAGE=\"with(appendonly=true, orientation=column)\" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), empty means heap" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#12
 	local count=$(grep "LARGE_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "LARGE_STORAGE=\"\" # For lineitem, eg: with(appendonly=true, orientation=column, compresstype=1z4), empty means heap" >> $MYVAR
+		echo "LARGE_STORAGE=\"with(appendonly=true, orientation=column,  compresstype=zstd, COMPRESSLEVEL=1)\" # For lineitem, eg: with(appendonly=true, orientation=column, compresstype=1z4), empty means heap" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#13
 	local count=$(grep "OPTIMIZER" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "OPTIMIZER=\"off\"" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
+	#14
+	local count=$(grep "GEN_DATA_DIR" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "GEN_DATA_DIR=\"$PWD/generated\"" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
+	#15
+	local count=$(grep "EXT_HOST_DATA_DIR" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "EXT_HOST_DATA_DIR=\"~\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 
@@ -287,17 +299,25 @@ echo_variables()
 	echo ""
 }
 
+check_dir(){
+  if [ -d $GEN_DATA_DIR ] ; then
+    rm -rf $GEN_DATA_DIR
+  fi
+  mkdir $GEN_DATA_DIR
+}
+
 ##################################################################################################################################################
 # Body
 ##################################################################################################################################################
 
 #check_user
 check_variables
+check_dir
 yum_installs
 #repo_init
 script_check
 echo_variables
 
 export GREENPLUM_PATH=$GREENPLUM_PATH
-cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER
+cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR
 

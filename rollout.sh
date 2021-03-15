@@ -23,6 +23,9 @@ SMALL_STORAGE="${16}"
 MEDIUM_STORAGE="${17}"
 LARGE_STORAGE="${18}"
 OPTIMIZER="${19}"
+GEN_DATA_DIR="${20}"
+EXT_HOST_DATA_DIR="${21}"
+
 
 if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$RUN_COMPILE_TPCH" == "" || "$RUN_GEN_DATA" == "" || "$RUN_INIT" == "" || "$RUN_DDL" == "" || "$RUN_LOAD" == "" || "$RUN_SQL" == "" || "$RUN_SINGLE_USER_REPORT" == "" || "$RUN_MULTI_USER" == "" || "$RUN_MULTI_USER_REPORT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
 	echo "Parameters: scale, explain T/F, random T/F, multi-user count, run compile T/F, run gen_data T/F, run init T/F, run DDL T/F, run load T/F, run SQL T/F, run single report T/F, run multi-user T/F, run multi report T/F, and single user iterations count."
@@ -34,9 +37,9 @@ QUIET=$5
 
 create_directories()
 {
-	if [ ! -d $LOCAL_PWD/log ]; then
+	if [ ! -d $GEN_DATA_DIR/log ]; then
 		echo "Creating log directory"
-		mkdir $LOCAL_PWD/log
+		mkdir $GEN_DATA_DIR/log
 	fi
 }
 
@@ -64,31 +67,31 @@ echo "GREENPLUM_PATH: $GREENPLUM_PATH"
 echo "############################################################################"
 echo ""
 if [ "$RUN_COMPILE_TPCH" == "true" ]; then
-	rm -f $PWD/log/end_compile_tpch.log
+	rm -f $GEN_DATA_DIR/log/end_compile_tpch.log
 fi
 if [ "$RUN_GEN_DATA" == "true" ]; then
-	rm -f $PWD/log/end_gen_data.log
+	rm -f $GEN_DATA_DIR/log/end_gen_data.log
 fi
 if [ "$RUN_INIT" == "true" ]; then
-	rm -f $PWD/log/end_init.log
+	rm -f $GEN_DATA_DIR/log/end_init.log
 fi
 if [ "$RUN_DDL" == "true" ]; then
-	rm -f $PWD/log/end_ddl.log
+	rm -f $GEN_DATA_DIR/log/end_ddl.log
 fi
 if [ "$RUN_LOAD" == "true" ]; then
-	rm -f $PWD/log/end_load.log
+	rm -f $GEN_DATA_DIR/log/end_load.log
 fi
 if [ "$RUN_SQL" == "true" ]; then
-	rm -f $PWD/log/end_sql.log
+	rm -f $GEN_DATA_DIR/log/end_sql.log
 fi
 if [ "$RUN_SINGLE_USER_REPORT" == "true" ]; then
-	rm -f $PWD/log/end_single_user_reports.log
+	rm -f $GEN_DATA_DIR/log/end_single_user_reports.log
 fi
 if [ "$RUN_MULTI_USER" == "true" ]; then
-	rm -f $PWD/log/end_testing_*.log
+	rm -f $GEN_DATA_DIR/log/end_testing_*.log
 fi
 if [ "$RUN_MULTI_USER_REPORT" == "true" ]; then
-	rm -f $PWD/log/end_multi_user_reports.log
+	rm -f $GEN_DATA_DIR/log/end_multi_user_reports.log
 fi
 
 get_version
@@ -110,5 +113,5 @@ fi
 
 for i in $(ls -d $PWD/0*); do
 	echo "$i/rollout.sh"
-	$i/rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER
+	$i/rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR
 done
