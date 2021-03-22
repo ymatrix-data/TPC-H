@@ -38,7 +38,7 @@ REPO_URL="https://github.com/ymatrix-data/TPC-H"
 ADMIN_USER="johndoe"
 
 # the directory you install this TPC-H project, as reminded before. You must configure it manually.
-INSTALL_DIR="/Users/caowei/code/other/TPC-H"
+INSTALL_DIR="/Users/johndoe/code/other/TPC-H"
 
 # the directory of our generated log files. Configurable.
 GEN_DATA_DIR=""
@@ -52,7 +52,7 @@ Every time new parameter(s) are generated, you will see a reminder
 as following:
 > There are new variables in the tpch_variables.sh file.  Please review to ensure the values are correct and then re-run this script.
 
-which urges you to re-check them out of prudence.
+which urges you to re-check them out of prudence, and run it again.
 
 ##Storage Options
 Table storage is defined in functions.sh and is configured for optimal performance. 
@@ -96,12 +96,20 @@ dynamically set between 60 and 120 days and substitution doesn't seem to be work
 with qgen.  So, hard code 90 days until this can be fixed by TPC.
 
 # Trouble Shooting
-1. For the very first time you run the script, you'll probably see the prompt:
+1. For the very first time you run the script on MacOS, you'll probably see the prompt:
 ```shell
 readlink: illegal option -- f
 usage: readlink [-n] [file ...]
 usage: dirname path
 ```
 Just configure the correct INSTALL_DIR mannually in tpch_variables.sh.
+
+OR,
+
+run:
+```shell
+brew install coreutils
+```
+to acquire the counterpart of the GNU tools on MacOS.
 
 *Continuing...*
