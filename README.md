@@ -96,7 +96,7 @@ dynamically set between 60 and 120 days and substitution doesn't seem to be work
 with qgen.  So, hard code 90 days until this can be fixed by TPC.
 
 # Trouble Shooting
-1. For the very first time you run the script on MacOS, you'll probably see the prompt:
+1. For the very first time you run the script on **MacOS**, you'll probably see the prompt:
 ```shell
 readlink: illegal option -- f
 usage: readlink [-n] [file ...]
