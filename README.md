@@ -13,7 +13,7 @@ Beta: PostgreSQL 10.*
 ## TPC-H Information
 Based on version 2.17.1 of TPC-H.
 
-## Special Prerequisite for MacOS users
+## Additional Prerequisite for MacOS users
 ```shell
 brew install coreutils
 ```
