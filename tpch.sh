@@ -19,7 +19,7 @@ check_variables()
 	fi
 	local count=$(grep "REPO_URL=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "REPO_URL=\"https://github.com/pivotalguru/TPC-H\"" >> $MYVAR
+		echo "REPO_URL=\"https://github.com/ymatrix-data/TPC-H\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "ADMIN_USER=" $MYVAR | wc -l)
@@ -30,7 +30,11 @@ check_variables()
 	fi
 	local count=$(grep "INSTALL_DIR=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		INSTALL_DIR=$(dirname $(readlink -f $0))
+	  if [[ "$OSTYPE" == "darwin"* ]]; then
+		  INSTALL_DIR=$(dirname $(greadlink -f $0))
+		else
+		  INSTALL_DIR=$(dirname $(readlink -f $0))
+		fi
 		echo "INSTALL_DIR=\"$INSTALL_DIR\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
@@ -46,7 +50,7 @@ check_variables()
 	fi
 	local count=$(grep "MULTI_USER_COUNT" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "MULTI_USER_COUNT=\"5\"" >> $MYVAR
+		echo "MULTI_USER_COUNT=\"1\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "GEN_DATA_SCALE" $MYVAR | wc -l)

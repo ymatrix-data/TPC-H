@@ -72,7 +72,7 @@ start_log()
 	if [ "$OSVERSION" == "Linux" ]; then
 		T="$(date +%s%N)"
 	else
-		T="$(date +%s)"
+		T="$(gdate +%s%N)"
 	fi
 }
 log()
@@ -81,16 +81,14 @@ log()
 	#duration
 	if [ "$OSVERSION" == "Linux" ]; then
 		T="$(($(date +%s%N)-T))"
-		# seconds
-		S="$((T/1000000000))"
-		# milliseconds
-		M="$((T/1000000))"
 	else
 		#must be OSX which doesn't have nano-seconds
-		T="$(($(date +%s)-T))"
-		S=$T
-		M=0
+		T="$(($(gdate +%s%N)-T))"
 	fi
+	# seconds
+	S="$((T/1000000000))"
+	# milliseconds
+	M="$((T/1000000))"
 
 	#this is done for steps that don't have id values
 	if [ "$id" == "" ]; then
@@ -123,3 +121,4 @@ create_hosts_file()
 		echo $MASTER_HOST > $LOCAL_PWD/segment_hosts.txt
 	fi
 }
+
