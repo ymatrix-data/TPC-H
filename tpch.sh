@@ -304,10 +304,9 @@ echo_variables()
 }
 
 check_dir(){
-  if [ -d $GEN_DATA_DIR ] ; then
-    rm -rf $GEN_DATA_DIR
+  if [ ! -d $GEN_DATA_DIR ] ; then
+		mkdir $GEN_DATA_DIR
   fi
-  mkdir $GEN_DATA_DIR
 }
 
 ##################################################################################################################################################
