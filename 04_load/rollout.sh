@@ -3,6 +3,7 @@ set -e
 
 GEN_DATA_DIR=${11}
 EXT_HOST_DATA_DIR=${12}
+ADD_FOREIGN_KEY=${15}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -85,6 +86,20 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
 
 		log $tuples
 	done
+	if [[ $ADD_FOREIGN_KEY == "true" ]]; then
+	  	for i in $(ls $PWD/foreignkeys/*.$filter.*.sql); do
+    		start_log
+
+    		id=$(echo $i | awk -F '.' '{print $1}')
+    		schema_name=$(echo $i | awk -F '.' '{print $2}')
+    		table_name=$(echo $i | awk -F '.' '{print $3}')
+
+    		echo "psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print \$3}'"
+    		tuples=$(psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print $3}'; exit ${PIPESTATUS[0]})
+
+    		log $tuples
+    	done
+  fi
 	stop_gpfdist
 else
 	if [ "$PGDATA" == "" ]; then
@@ -110,6 +125,23 @@ else
 			fi
 		done
 	done
+  if [[ ADD_FOREIGN_KEY == "true" ]]; then
+    for i in $(ls $PWD/foreignkeys/*.$filter.*.sql); do
+      id=$(echo $i | awk -F '.' '{print $1}')
+      schema_name=$(echo $i | awk -F '.' '{print $2}')
+      table_name=$(echo $i | awk -F '.' '{print $3}')
+      for p in $(seq 1 $PARALLEL); do
+        filename=$(echo $PGDATA/pivotalguru_$p/$table_name.tbl*)
+        if [[ -f $filename && -s $filename ]]; then
+          start_log
+          filename="'""$filename""'"
+          echo "psql -v ON_ERROR_STOP=1 -f $i -v filename=\"$filename\" | grep COPY | awk -F ' ' '{print \$2}'"
+          tuples=$(psql -v ON_ERROR_STOP=1 -f $i -v filename="$filename" | grep COPY | awk -F ' ' '{print $2}'; exit ${PIPESTATUS[0]})
+          log $tuples
+        fi
+      done
+    done
+  fi
 fi
 
 max_id=$(ls $PWD/*.sql | tail -1)

@@ -159,6 +159,12 @@ check_variables()
 		echo "EXT_HOST_DATA_DIR=\"~\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
+	#16
+	local count=$(grep "ADD_FOREIGN_KEY" $MYVAR | wc -l)
+	if [ "$count" -eq "0" ]; then
+		echo "ADD_FOREIGN_KEY=\"false\"" >> $MYVAR
+		new_variable=$(($new_variable + 1))
+	fi
 
 	if [ "$new_variable" -gt "0" ]; then
 		echo "There are new variables in the tpch_variables.sh file.  Please review to ensure the values are correct and then re-run this script."
@@ -322,5 +328,5 @@ script_check
 echo_variables
 
 export GREENPLUM_PATH=$GREENPLUM_PATH
-cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR
+cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY
 
