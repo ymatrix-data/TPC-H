@@ -63,7 +63,7 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 				table_name2=$(echo $z | awk -F '|' '{print $2}')
 				storage_size=$(echo $z | awk -F '|' '{print $3}')
 				if [[ "$table_name2" == "$table_name" && ${!storage_size} == "USING mars2" ]]; then
-				    CREATE_MARS2_BTREE_INDEX="CREATE INDEX idx_$table_name ON tpch.$table_name USING mars2_btree($(echo $z | awk -F '|' '{print $4}'))"
+				    CREATE_MARS2_BTREE_INDEX="CREATE INDEX idx_$table_name ON tpch.$table_name USING mars2_btree($(echo $z | awk -F '|' '{print $4}')) $(echo $z | awk -F '|' '{print $5}')"
 				fi
 			done
 		fi
