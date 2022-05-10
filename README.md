@@ -62,20 +62,20 @@ which urges you to re-check them out of prudence, and run it again.
 ## Storage Options
 Table storage is defined in tpch_variables.sh and is configured for optimal performance as default. 
 
-### mars2 support
-we support mars2 storage in new versions. 
+### sortheap support
+we support sortheap storage in new versions. 
 
 #### Usage
 Edit tpch_variables.sh:
 ```bash
-SMALL_STORAGE="" # For region/nation, eg: USING mars2. Empty means heap
-MEDIUM_STORAGE="USING mars2" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap
-LARGE_STORAGE="USING mars2" # For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap
+SMALL_STORAGE="" # For region/nation, eg: USING sortheap. Empty means heap
+MEDIUM_STORAGE="USING sortheap" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING sortheap. Empty means heap
+LARGE_STORAGE="USING sortheap" # For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING sortheap. Empty means heap
 ```
-As comments above suggest, tables with different expected size can be set different storage type. By setting "USING mars2", corresponding tables will use mars2 storages and a mars2_btree index will be created for each table.
+As comments above suggest, tables with different expected size can be set different storage type. By setting "USING sortheap", corresponding tables will use sortheap storages and a sortheap_btree index will be created for each table.
 
-#### Advanced tuning for mars2_btree index
-In order to let mars_btree indexes work best for TPC-H benchmark, user can edit 03_ddl/mars2_btree_index.txt to modify on with column the index will be created.
+#### Advanced tuning for sortheap_btree index
+In order to let mars_btree indexes work best for TPC-H benchmark, user can edit 03_ddl/sortheap_btree_index.txt to modify on with column the index will be created.
 ```bash
 1|customer|MEDIUM_STORAGE|C_CUSTKEY|
 2|lineitem|LARGE_STORAGE|L_ORDERKEY|
@@ -86,7 +86,7 @@ In order to let mars_btree indexes work best for TPC-H benchmark, user can edit 
 7|region|SMALL_STORAGE|R_REGIONKEY|
 8|supplier|MEDIUM_STORAGE|S_SUPPKEY|
 ```
-Please focus on the 4th column, which will be exactly as the parameter of "USING mars2_btree()" inside the brackets. Multiple keys are allowable, such as "KEY1,KEY2". 
+Please focus on the 4th column, which will be exactly as the parameter of "USING sortheap_btree()" inside the brackets. Multiple keys are allowable, such as "KEY1,KEY2". 
 
 More advanced users can even add some options for the index, such as unique mode (add "WITH(uniquemode=true)" in the 5th column), which might not be likely applied in TPC-H benchmark, though.
 
