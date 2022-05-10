@@ -39,7 +39,6 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 	id=$(echo $i | awk -F '.' '{print $1}')
 	schema_name=$(echo $i | awk -F '.' '{print $2}')
 	table_name=$(echo $i | awk -F '.' '{print $3}')
-	start_log
 
 	if [ "$filter" == "gpdb" ]; then
 		if [ "$RANDOM_DISTRIBUTION" == "true" ]; then
@@ -53,14 +52,30 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 			done
 			DISTRIBUTED_BY="DISTRIBUTED BY (""$distribution"")"
 		fi
+
+		if [[ "$SMALL_STORAGE" != "USING mars2" && "$MEDIUM_STORAGE" != "USING mars2" && "$LARGE_STORAGE" != "USING mars2" ]]; then
+		    CREATE_EXTENSION=""
+			CREATE_MARS2_BTREE_INDEX=""
+		else
+		    CREATE_EXTENSION="CREATE EXTENSION IF NOT EXISTS matrixts"
+			CREATE_MARS2_BTREE_INDEX=""
+			for z in $(cat $PWD/mars2_btree_index.txt); do
+				table_name2=$(echo $z | awk -F '|' '{print $2}')
+				storage_size=$(echo $z | awk -F '|' '{print $3}')
+				if [[ "$table_name2" == "$table_name" && ${!storage_size} == "USING mars2" ]]; then
+				    CREATE_MARS2_BTREE_INDEX="CREATE INDEX idx_$table_name ON tpch.$table_name USING mars2_btree($(echo $z | awk -F '|' '{print $4}')) $(echo $z | awk -F '|' '{print $5}')"
+				fi
+			done
+		fi
 	else
 		DISTRIBUTED_BY=""
+		CREATE_EXTENSION=""
+		CREATE_MARS2_BTREE_INDEX=""
 	fi
 
-	echo "psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE=\"$SMALL_STORAGE\" -v MEDIUM_STORAGE=\"$MEDIUM_STORAGE\" -v LARGE_STORAGE=\"$LARGE_STORAGE\" -v DISTRIBUTED_BY=\"$DISTRIBUTED_BY\""
-	psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE="$SMALL_STORAGE" -v MEDIUM_STORAGE="$MEDIUM_STORAGE" -v LARGE_STORAGE="$LARGE_STORAGE" -v DISTRIBUTED_BY="$DISTRIBUTED_BY"
+	echo "psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE=\"$SMALL_STORAGE\" -v MEDIUM_STORAGE=\"$MEDIUM_STORAGE\" -v LARGE_STORAGE=\"$LARGE_STORAGE\" -v DISTRIBUTED_BY=\"$DISTRIBUTED_BY\" -v CREATE_MARS2_BTREE_INDEX=\"$CREATE_MARS2_BTREE_INDEX\" -v CREATE_EXTENSION=\"$CREATE_EXTENSION\""
+	psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE="$SMALL_STORAGE" -v MEDIUM_STORAGE="$MEDIUM_STORAGE" -v LARGE_STORAGE="$LARGE_STORAGE" -v DISTRIBUTED_BY="$DISTRIBUTED_BY" -v CREATE_MARS2_BTREE_INDEX="$CREATE_MARS2_BTREE_INDEX" -v CREATE_EXTENSION="$CREATE_EXTENSION"
 
-	log
 done
 
 #external tables are the same for all gpdb
