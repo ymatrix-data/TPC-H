@@ -3,15 +3,19 @@ set -e
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+PURE_SCRIPT_MODE="$1"
+VAR_PATH="$2"
+
 MYCMD="tpch.sh"
 MYVAR="tpch_variables.sh"
+new_variable="0"
+
 ##################################################################################################################################################
 # Functions
 ##################################################################################################################################################
+
 check_variables()
 {
-	new_variable="0"
-
 	### Make sure variables file is available
 	if [ ! -f "$PWD/$MYVAR" ]; then
 		touch $PWD/$MYVAR
@@ -165,16 +169,30 @@ check_variables()
 		echo "ADD_FOREIGN_KEY=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
+}
 
+request_user_check_variables()
+{
 	if [ "$new_variable" -gt "0" ]; then
 		echo "There are new variables in the tpch_variables.sh file.  Please review to ensure the values are correct and then re-run this script."
 		exit 1
 	fi
+}
+
+source_variables()
+{
 	echo "############################################################################"
 	echo "Sourcing $MYVAR"
 	echo "############################################################################"
 	echo ""
 	source $MYVAR
+	if [ "$VAR_PATH" != "" ]; then
+		echo "############################################################################"
+		echo "Sourcing $VAR_PATH"
+		echo "############################################################################"
+		echo ""
+		source $VAR_PATH
+	fi
 }
 
 check_user()
@@ -305,6 +323,10 @@ echo_variables()
 	echo "ADMIN_USER: $ADMIN_USER"
 	echo "INSTALL_DIR: $INSTALL_DIR"
 	echo "MULTI_USER_COUNT: $MULTI_USER_COUNT"
+	echo "GEN_DATA_SCALE: $GEN_DATA_SCALE"
+	echo "SMALL_STORAGE: $SMALL_STORAGE"
+	echo "MEDIUM_STORAGE: $MEDIUM_STORAGE"
+	echo "LARGE_STORAGE: $LARGE_STORAGE"
 	echo "############################################################################"
 	echo ""
 }
@@ -319,14 +341,24 @@ check_dir(){
 # Body
 ##################################################################################################################################################
 
-#check_user
-check_variables
-check_dir
-yum_installs
-#repo_init
-script_check
-echo_variables
+if [ "$PURE_SCRIPT_MODE·" == "" ];then
+	#check_user
+	check_variables
+	request_user_check_variables
+	source_variables
+	check_dir
+	yum_installs
+	#repo_init
+	script_check
+	echo_variables
+else
+	check_variables
+	# check_binaries
+	source_variables
+	check_dir
+	echo_variables
+fi
 
 export GREENPLUM_PATH=$GREENPLUM_PATH
-cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY
+cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY $PURE_SCRIPT_MODE
 
