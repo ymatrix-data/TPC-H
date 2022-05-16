@@ -3,6 +3,7 @@ set -e
 
 GEN_DATA_DIR=${11}
 EXT_HOST_DATA_DIR=${12}
+PURE_SCRIPT_MODE=${16}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -49,7 +50,9 @@ clean_tpc(){
   popd
 }
 
-make_tpc
+if [ "$PURE_SCRIPT_MODE" == "" ]; then
+	make_tpc
+fi
 create_hosts_file
 copy_queries
 copy_tpc
