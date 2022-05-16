@@ -353,7 +353,6 @@ if [ "$PURE_SCRIPT_MODE·" == "" ];then
 	echo_variables
 else
 	check_variables
-	# check_binaries
 	source_variables
 	check_dir
 	echo_variables
