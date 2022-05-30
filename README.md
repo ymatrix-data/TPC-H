@@ -1,7 +1,7 @@
 
 ## TPC-H benchmark scripts for Greenplum and PostgreSQL databases.
 
-###Supported versions:
+### Supported versions:
 MatrixDB 2.*, 3.*
 
 Greenplum 4.3, 5.*, 6.*, 7.*
