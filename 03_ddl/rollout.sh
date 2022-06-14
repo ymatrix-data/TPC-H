@@ -13,7 +13,7 @@ SINGLE_USER_ITERATIONS=$5
 SMALL_STORAGE=$7
 MEDIUM_STORAGE=$8
 LARGE_STORAGE=$9
-GEN_DATA_DIR=${11}
+GEN_DATA_DIR=${12}
 
 if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
 	echo "You must provide the scale as a parameter in terms of Gigabytes, true/false to run queries with EXPLAIN ANALYZE option, true/false to use random distrbution, multi-user count, and the number of sql iterations."

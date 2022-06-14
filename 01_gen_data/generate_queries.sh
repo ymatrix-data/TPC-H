@@ -21,6 +21,10 @@ for i in $(ls $PWD/*.sql |  xargs -n 1 basename); do
 
 	echo "echo \":EXPLAIN_ANALYZE\" > $PWD/../../05_sql/$filename"
 	echo ":EXPLAIN_ANALYZE" > $PWD/../../05_sql/$filename
+	echo ":CREATE_TABLE" >> $PWD/../../05_sql/$filename
+	echo "./qgen $q >> $PWD/../../05_sql/$filename"
+	./qgen $q >> $PWD/../../05_sql/$filename
+	echo ":INSERT_TABLE" >> $PWD/../../05_sql/$filename
 	echo "./qgen $q >> $PWD/../../05_sql/$filename"
 	./qgen $q >> $PWD/../../05_sql/$filename
 done
