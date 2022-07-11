@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-GEN_DATA_DIR=${11}
-EXT_HOST_DATA_DIR=${12}
-ADD_FOREIGN_KEY=${15}
+GEN_DATA_DIR=${12}
+EXT_HOST_DATA_DIR=${13}
+ADD_FOREIGN_KEY=${16}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh

@@ -71,6 +71,7 @@ Edit tpch_variables.sh:
 SMALL_STORAGE="" # For region/nation, eg: USING mars2. Empty means heap
 MEDIUM_STORAGE="USING mars2" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap
 LARGE_STORAGE="USING mars2" # For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap
+CREATE_TBL="" #Default value is false, for normal queries, ignore it. For mix queries, such as 'insert into table_N select ...', set it to true
 ```
 As comments above suggest, tables with different expected size can be set different storage type. By setting "USING mars2", corresponding tables will use mars2 storages and a mars2_btree index will be created for each table.
 

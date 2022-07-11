@@ -8,6 +8,8 @@ source $PWD/../functions.sh
 session_id=$1
 EXPLAIN_ANALYZE=$2
 OPTIMIZER=$3
+CREATE_TBL=${5}
+
 
 if [[ "$session_id" == "" || "$EXPLAIN_ANALYZE" == "" ]]; then
 	echo "Error: you must provide the session id and explain analyze true/false as parameters."
@@ -36,29 +38,40 @@ for order in $(seq 1 22); do
 	#add explain analyze 
 	echo "echo \":EXPLAIN_ANALYZE\" > $sql_dir/$target_filename"
 	echo ":EXPLAIN_ANALYZE" > $sql_dir/$target_filename
+	echo ":CREATE_TABLE" >> $sql_dir/$target_filename
 	echo "sed -n \"$start_position\",\"$end_position\"p $sql_dir/multi.sql >> $sql_dir/$target_filename"
+	sed -n "$start_position","$end_position"p $sql_dir/multi.sql >> $sql_dir/$target_filename
+	echo "sed -n \"$start_position\",\"$end_position\"p $sql_dir/multi.sql >> $sql_dir/$target_filename"
+	echo ":INSERT_TABLE" >> $sql_dir/$target_filename
 	sed -n "$start_position","$end_position"p $sql_dir/multi.sql >> $sql_dir/$target_filename
 done
 echo "rm -f $sql_dir/multi.sql"
 rm -f $sql_dir/multi.sql 
 
 tuples="0"
+create_tbl=""
+insert_tbl=""
 for i in $(ls $sql_dir/*.sql); do
 
 	start_log
-	id=$i
+	id=`echo $i | awk -F '.' '{print $3}'`
 	schema_name=$session_id
 	table_name=$(basename $i | awk -F '.' '{print $3}')
 
+	if [ "$CREATE_TBL" == "true" ]; then
+		create_tbl="CREATE TABLE tpch_tbl_"${id}"_"${session_id}" AS"
+		insert_tbl="INSERT INTO tpch_tbl_"${id}"_"${session_id}
+	fi
+
 	if [ "$EXPLAIN_ANALYZE" == "false" ]; then
-		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -f $i | wc -l"
-		tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -f $i | wc -l; exit ${PIPESTATUS[0]})
+		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"\"  -v CREATE_TABLE=\"$create_tbl\" -v INSERT_TABLE=\"$insert_tbl\"  -f $i | wc -l"
+		tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
 		tuples=$(($tuples-1))
 	else
 		myfilename=$(basename $i)
 		mylogfile=$GEN_DATA_DIR/log/"$session_id"".""$myfilename"".multi.explain_analyze.log"
-		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -f $i"
-		PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -f $i > $mylogfile
+		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -v CREATE_TABLE=\"$create_tbl\" -v INSERT_TABLE=\"$insert_tbl\" -f $i"
+		PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i > $mylogfile
 		tuples="0"
 	fi
 		

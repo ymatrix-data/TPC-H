@@ -1,11 +1,10 @@
 #!/bin/bash
 set -e
 
-RUN_SINGLE_USER_REPORT=${14}
+GEN_DATA_DIR=${12}
+RUN_SINGLE_USER_REPORT=${15}
 
 if [ "$RUN_SINGLE_USER_REPORT" == "true" ]; then
-  GEN_DATA_DIR=${11}
-
   PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
   source $PWD/../functions.sh
   source_bashrc
