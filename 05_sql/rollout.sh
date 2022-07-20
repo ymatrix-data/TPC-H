@@ -47,7 +47,7 @@ if [ "$RUN_SQL" == "true" ]; then
         myfilename=$(basename $i)
         mylogfile=$GEN_DATA_DIR/log/$myfilename.single.explain_analyze.log
         echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\"  -f $i > $mylogfile"
-        PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl"  -f $i > $mylogfile
+        PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl"  -f $i > $mylogfile
         tuples="0"
       fi
       log $tuples
