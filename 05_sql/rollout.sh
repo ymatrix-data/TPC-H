@@ -36,7 +36,7 @@ if [ "$RUN_SQL" == "true" ]; then
       schema_name=`echo $i | awk -F '.' '{print $2}'`
       table_name=`echo $i | awk -F '.' '{print $3}'`
       start_log
-      if [ "$CREATE_TBL" != "" ]; then
+      if [ "$CREATE_TBL" = "true" ]; then
         create_tbl="CREATE TABLE tpch_tbl_"${id}" AS"
         insert_tbl="INSERT INTO tpch_tbl_"${id}
       fi
