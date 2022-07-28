@@ -70,8 +70,8 @@ for i in $(ls $sql_dir/*.sql); do
 	else
 		myfilename=$(basename $i)
 		mylogfile=$GEN_DATA_DIR/log/"$session_id"".""$myfilename"".multi.explain_analyze.log"
-		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -v CREATE_TABLE=\"$create_tbl\" -v INSERT_TABLE=\"$insert_tbl\" -f $i"
-		PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i > $mylogfile
+		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, SUMMARY, FORMAT JSON)\" -v CREATE_TABLE=\"$create_tbl\" -v INSERT_TABLE=\"$insert_tbl\" -f $i"
+		PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, SUMMARY, FORMAT JSON)" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i > $mylogfile
 		tuples="0"
 	fi
 		
