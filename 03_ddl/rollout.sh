@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+psql_with_echo()
+{
+	echo "psql $@"
+	psql "$@"
+}
+
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 source_bashrc
@@ -56,9 +62,11 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 		if [[ "$SMALL_STORAGE" != "USING mars2" && "$MEDIUM_STORAGE" != "USING mars2" && "$LARGE_STORAGE" != "USING mars2" ]]; then
 		    CREATE_EXTENSION=""
 			CREATE_MARS2_BTREE_INDEX=""
+			MARS2_ENCODING_MINMAX=""
 		else
 		    CREATE_EXTENSION="CREATE EXTENSION IF NOT EXISTS matrixts"
 			CREATE_MARS2_BTREE_INDEX=""
+			MARS2_ENCODING_MINMAX="encoding (minmax)"
 			for z in $(cat $PWD/mars2_btree_index.txt); do
 				table_name2=$(echo $z | awk -F '|' '{print $2}')
 				storage_size=$(echo $z | awk -F '|' '{print $3}')
@@ -71,10 +79,21 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 		DISTRIBUTED_BY=""
 		CREATE_EXTENSION=""
 		CREATE_MARS2_BTREE_INDEX=""
+		MARS2_ENCODING_MINMAX=""
 	fi
 
-	echo "psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE=\"$SMALL_STORAGE\" -v MEDIUM_STORAGE=\"$MEDIUM_STORAGE\" -v LARGE_STORAGE=\"$LARGE_STORAGE\" -v DISTRIBUTED_BY=\"$DISTRIBUTED_BY\" -v CREATE_MARS2_BTREE_INDEX=\"$CREATE_MARS2_BTREE_INDEX\" -v CREATE_EXTENSION=\"$CREATE_EXTENSION\""
-	psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE="$SMALL_STORAGE" -v MEDIUM_STORAGE="$MEDIUM_STORAGE" -v LARGE_STORAGE="$LARGE_STORAGE" -v DISTRIBUTED_BY="$DISTRIBUTED_BY" -v CREATE_MARS2_BTREE_INDEX="$CREATE_MARS2_BTREE_INDEX" -v CREATE_EXTENSION="$CREATE_EXTENSION"
+	psql_with_echo \
+		-f $i \
+		-P pager=off \
+		-v ON_ERROR_STOP=1 \
+		-v SMALL_STORAGE="$SMALL_STORAGE" \
+		-v MEDIUM_STORAGE="$MEDIUM_STORAGE" \
+		-v LARGE_STORAGE="$LARGE_STORAGE" \
+		-v DISTRIBUTED_BY="$DISTRIBUTED_BY" \
+		-v CREATE_MARS2_BTREE_INDEX="$CREATE_MARS2_BTREE_INDEX" \
+		-v MARS2_ENCODING_MINMAX="$MARS2_ENCODING_MINMAX" \
+		-v CREATE_EXTENSION="$CREATE_EXTENSION" \
+		-qa
 
 done
 
@@ -120,8 +139,13 @@ if [ "$filter" == "gpdb" ]; then
 			done
 		fi
 		LOCATION+="'"
-		echo "psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v LOCATION=\"$LOCATION\""
-		psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v LOCATION="$LOCATION" 
+
+		psql_with_echo \
+			-P pager=off \
+			-f $i \
+			-v ON_ERROR_STOP=1 \
+			-v LOCATION="$LOCATION" \
+			-qa
 
 		log
 	done
