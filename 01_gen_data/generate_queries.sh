@@ -8,6 +8,8 @@ set -e
 
 query_id=1
 
+CREATE_TABLE=$1
+
 echo "rm -f $PWD/../05_sql/*.tpch.*.sql"
 rm -f $PWD/../05_sql/*.tpch.*.sql
 
@@ -22,8 +24,10 @@ for i in $(ls $PWD/*.sql |  xargs -n 1 basename); do
 	echo "echo \":EXPLAIN_ANALYZE\" > $PWD/../../05_sql/$filename"
 	echo ":EXPLAIN_ANALYZE" > $PWD/../../05_sql/$filename
 	echo ":CREATE_TABLE" >> $PWD/../../05_sql/$filename
-	echo "./qgen $q >> $PWD/../../05_sql/$filename"
-	./qgen $q >> $PWD/../../05_sql/$filename
+	if [ "$CREATE_TABLE" == "true" ]; then
+		echo "./qgen $q >> $PWD/../../05_sql/$filename"
+		./qgen $q >> $PWD/../../05_sql/$filename
+	fi
 	echo ":INSERT_TABLE" >> $PWD/../../05_sql/$filename
 	echo "./qgen $q >> $PWD/../../05_sql/$filename"
 	./qgen $q >> $PWD/../../05_sql/$filename

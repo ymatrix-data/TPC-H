@@ -10,6 +10,7 @@ EXPLAIN_ANALYZE=$2
 RANDOM_DISTRIBUTION=$3
 MULTI_USER_COUNT=$4
 SINGLE_USER_ITERATIONS=$5
+CREATE_TABLE=${10}
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
 
@@ -128,7 +129,7 @@ echo ""
 
 echo "Generate queries"
 cd $PWD
-$PWD/generate_queries.sh 
+$PWD/generate_queries.sh $CREATE_TABLE
 
 log
 
