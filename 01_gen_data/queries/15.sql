@@ -12,7 +12,7 @@ with revenue (supplier_no, total_revenue) as (
 			lineitem
 		where
 			l_shipdate >= date ':1'
-			and l_shipdate < date ':1' + interval '3 months'
+			and l_shipdate < date (date ':1' + interval '3 months')
 		group by
 			l_suppkey
 )
