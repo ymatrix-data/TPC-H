@@ -17,7 +17,7 @@ where
 	p_partkey = ps_partkey
 	and p_brand <> ':1'
 	and p_type not like ':2%'
-	and p_size in (:3, :4, :5, :6, :7, :8, :9, :10)
+	and p_size in (smallint ':3', smallint ':4', smallint ':5', smallint ':6', smallint ':7', smallint ':8', smallint ':9', smallint ':10')
 	and ps_suppkey not in (
 		select
 			s_suppkey
