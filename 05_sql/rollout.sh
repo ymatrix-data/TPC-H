@@ -30,6 +30,8 @@ if [ "$RUN_SQL" == "true" ]; then
   rm -f $GEN_DATA_DIR/log/*single.explain_analyze.log
   create_tbl=""
   insert_tbl=""
+  d=$(TZ=UTC-8 date +%Y%m%d%T)
+  mkdir -p $GEN_DATA_DIR/log/$d
   for i in $(ls $PWD/*.tpch.*.sql); do
     for x in $(seq 1 $SINGLE_USER_ITERATIONS); do
       id=`echo $i | awk -F '.' '{print $3}'`
@@ -45,9 +47,9 @@ if [ "$RUN_SQL" == "true" ]; then
         tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
       else
         myfilename=$(basename $i)
-        mylogfile=$GEN_DATA_DIR/log/$myfilename.single.explain_analyze.log
-        echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, SUMMARY, FORMAT JSON)\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\"  -f $i > $mylogfile"
-        PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, SUMMARY, FORMAT JSON)"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl"  -f $i > $mylogfile
+        mylogfile=$GEN_DATA_DIR/log/$d/$myfilename.single.explain_analyze.log
+        echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\"  -f $i > $mylogfile"
+        PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl"  -f $i > $mylogfile
         tuples="0"
       fi
       log $tuples
