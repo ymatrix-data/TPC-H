@@ -15,10 +15,10 @@ RUN_SQL="true"
 RUN_SINGLE_USER_REPORT="true"
 RUN_MULTI_USER="false"
 RUN_MULTI_USER_REPORT="false"
-GREENPLUM_PATH="//usr/local/matrixdb/greenplum_path.sh"
+GREENPLUM_PATH="/opt/ymatrix/matrixdb5/greenplum_path.sh"
 SMALL_STORAGE="USING mars2" # For region/nation, eg: USING mars2. Empty means heap
-MEDIUM_STORAGE="USING mars2" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap
-LARGE_STORAGE="USING mars2" # For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap
+MEDIUM_STORAGE="USING mars2 with (compress_threshold=12000)" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap
+LARGE_STORAGE="USING mars2 with (compress_threshold=12000)" # For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap
 OPTIMIZER="off"
 GEN_DATA_DIR="/mxdata/TPC-H/generated"
 EXT_HOST_DATA_DIR="~"

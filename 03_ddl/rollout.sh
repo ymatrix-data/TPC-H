@@ -54,7 +54,7 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 			DISTRIBUTED_BY="DISTRIBUTED BY (""$distribution"")"
 		fi
 
-		if [[ "$SMALL_STORAGE" != "USING mars2" && "$MEDIUM_STORAGE" != "USING mars2" && "$LARGE_STORAGE" != "USING mars2" ]]; then
+		if [[ "$SMALL_STORAGE" != *"mars2"* && "$MEDIUM_STORAGE" != *"mars2"* && "$LARGE_STORAGE" != *"mars2"* ]]; then
 		    CREATE_EXTENSION=""
 			CREATE_MARS2_BTREE_INDEX=""
 		else
@@ -63,7 +63,7 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 			for z in $(cat $PWD/mars2_btree_index.txt); do
 				table_name2=$(echo $z | awk -F '|' '{print $2}')
 				storage_size=$(echo $z | awk -F '|' '{print $3}')
-				if [[ "$table_name2" == "$table_name" && ${!storage_size} == "USING mars2" ]]; then
+				if [[ "$table_name2" == "$table_name" && ${!storage_size} = *"mars2"* ]]; then
 				    CREATE_MARS2_BTREE_INDEX="CREATE INDEX idx_$table_name ON tpch.$table_name USING mars2_btree($(echo $z | awk -F '|' '{print $4}')) $(echo $z | awk -F '|' '{print $5}')"
 				fi
 			done

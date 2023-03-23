@@ -1,8 +1,8 @@
-1|customer|MEDIUM_STORAGE|C_MKTSEGMENT|
-2|lineitem|LARGE_STORAGE|l_shipinstruct,l_shipmode,l_quantity,l_receiptdate|
+1|customer|MEDIUM_STORAGE|C_CUSTKEY|
+2|lineitem|LARGE_STORAGE|L_ORDERKEY|
 3|nation|SMALL_STORAGE|N_NATIONKEY|
-4|orders|LARGE_STORAGE|o_orderstatus,o_orderpriority,o_orderdate|
-5|part|MEDIUM_STORAGE|p_brand,p_size,p_container,p_type|
-6|partsupp|MEDIUM_STORAGE|PS_AVAILQTY|
+4|orders|LARGE_STORAGE|O_ORDERKEY|
+5|part|MEDIUM_STORAGE|P_PARTKEY|
+6|partsupp|MEDIUM_STORAGE|PS_PARTKEY|
 7|region|SMALL_STORAGE|R_REGIONKEY|
 8|supplier|MEDIUM_STORAGE|S_SUPPKEY|
