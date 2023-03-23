@@ -16,6 +16,8 @@ if [ "$RUN_SQL" == "true" ]; then
   OPTIMIZER=${11}
   GEN_DATA_DIR=${12}
   CREATE_TBL=${10}
+  RUN_ID=${17}
+  SESSION_GUCS=${18}
 
 
   if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
@@ -30,8 +32,7 @@ if [ "$RUN_SQL" == "true" ]; then
   rm -f $GEN_DATA_DIR/log/*single.explain_analyze.log
   create_tbl=""
   insert_tbl=""
-  d=$(TZ=UTC-8 date +%Y%m%d%T)
-  mkdir -p $GEN_DATA_DIR/log/$d
+  mkdir -p $GEN_DATA_DIR/log/$RUN_ID
   for i in $(ls $PWD/*.tpch.*.sql); do
     for x in $(seq 1 $SINGLE_USER_ITERATIONS); do
       id=`echo $i | awk -F '.' '{print $3}'`
@@ -47,10 +48,14 @@ if [ "$RUN_SQL" == "true" ]; then
         tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
       else
         myfilename=$(basename $i)
-        mylogfile=$GEN_DATA_DIR/log/$d/$myfilename.single.explain_analyze.log
-        echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\"  -f $i > $mylogfile"
-        PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl"  -f $i > $mylogfile
+        mylogfile=$GEN_DATA_DIR/log/$RUN_ID/$myfilename.single.explain_analyze.log
+        echo "gucs: ${SESSION_GUCS}" >> $mylogfile
+        echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\" -f $i > $mylogfile"
+        PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i >> $mylogfile
         tuples="0"
+      fi
+      if [ "$SINGLE_USER_ITERATIONS" > "1" ] && [ "$x" == "1" ]; then
+        continue
       fi
       log $tuples
     done
