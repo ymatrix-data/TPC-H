@@ -373,10 +373,6 @@ fi
 if [ "$PREHEATING_DATA" == "true" ]; then
     SINGLE_USER_ITERATIONS=`expr $SINGLE_USER_ITERATIONS + 1`
 fi
-if [ "$PGDATABASE" == "mars2_s1000" ]; then
-    GEN_DATA_SCALE=1000
-    SINGLE_USER_ITERATIONS=2
-fi
 if [ "$TPCH_RUN_ID" == "" ]; then
     TPCH_RUN_ID=$(date "+%Y-%m-%d-%H-%M-%S")
 fi
