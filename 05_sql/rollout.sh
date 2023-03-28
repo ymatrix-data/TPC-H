@@ -45,13 +45,13 @@ if [ "$RUN_SQL" == "true" ]; then
       fi
       if [ "$EXPLAIN_ANALYZE" == "false" ]; then
         echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\"  -f $i | wc -l"
-        tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
+        tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER  -c statement_mem=2GB -c matrix.enable_mxv_hash_join=on -c enable_indexscan=off -c enable_mergejoin=off -c enable_nestloop=off -c max_parallel_workers_per_gather=4 -c gp_interconnect_type=tcp -c gp_enable_hashjoin_size_heuristic=on -c enable_parallel_hash=off -c gp_cached_segworkers_threshold=50 -c enable_partitionwise_aggregate=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
       else
         myfilename=$(basename $i)
         mylogfile=$GEN_DATA_DIR/log/$RUN_ID/$myfilename.single.explain_analyze.log
         echo "gucs: ${SESSION_GUCS}" >> $mylogfile
         echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\" -f $i > $mylogfile"
-        PGOPTIONS="-c optimizer=$OPTIMIZER" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i >> $mylogfile
+        PGOPTIONS="-c optimizer=$OPTIMIZER  -c statement_mem=2GB -c matrix.enable_mxv_hash_join=on -c enable_indexscan=off -c enable_mergejoin=off -c enable_nestloop=off -c max_parallel_workers_per_gather=4 -c gp_interconnect_type=tcp -c gp_enable_hashjoin_size_heuristic=on -c enable_parallel_hash=off -c gp_cached_segworkers_threshold=50 -c enable_partitionwise_aggregate=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i >> $mylogfile
         tuples="0"
       fi
       if [ "$SINGLE_USER_ITERATIONS" > "1" ] && [ "$x" == "1" ]; then

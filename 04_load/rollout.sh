@@ -165,7 +165,25 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
 
 	start_log
 	#Analyze schema using analyzedb
-	analyzedb -d $dbname -s tpch --full -a
+	#analyzedb -d $dbname -s tpch --full -a
+
+        psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum region;"
+        psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum nation;"
+        psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum part;"
+        psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum partsupp;"
+        psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum supplier;"
+        psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum orders;"
+        psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum lineitem;"
+        psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum customer;"
+
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan region;"
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan nation;"
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan part;"
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan partsupp;"
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan supplier;"
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan orders;"
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan lineitem;"
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan customer;"
 
 	tuples="0"
 	log $tuples
