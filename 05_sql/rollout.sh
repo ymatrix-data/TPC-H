@@ -18,6 +18,7 @@ if [ "$RUN_SQL" == "true" ]; then
   CREATE_TBL=${10}
   RUN_ID=${17}
   SESSION_GUCS=${18}
+  PREHEATING_DATA=${19}
 
 
   if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
@@ -54,7 +55,7 @@ if [ "$RUN_SQL" == "true" ]; then
         PGOPTIONS="-c optimizer=$OPTIMIZER" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i >> $mylogfile
         tuples="0"
       fi
-      if [ "$SINGLE_USER_ITERATIONS" > "1" ] && [ "$x" == "1" ]; then
+      if [ "$PREHEATING_DATA" == "true" ] && [ "$x" == "1" ]; then
         continue
       fi
       log $tuples

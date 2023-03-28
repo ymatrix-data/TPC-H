@@ -3,7 +3,7 @@ set -e
 
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
-PURE_SCRIPT_MODE=${19}
+PURE_SCRIPT_MODE=${20}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh

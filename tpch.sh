@@ -175,7 +175,12 @@ check_variables()
 		echo "CREATE_TBL=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
-
+	#18
+  local count=$(grep "PREHEATING_DATA=" $MYVAR | wc -l)
+  if [ "$count" -eq "0" ]; then
+    echo "PREHEATING_DATA=\"true\"" >> $MYVAR
+    new_variable=$(($new_variable + 1))
+  fi
 }
 
 request_user_check_variables()
@@ -334,6 +339,7 @@ echo_variables()
 	echo "SMALL_STORAGE: $SMALL_STORAGE"
 	echo "MEDIUM_STORAGE: $MEDIUM_STORAGE"
 	echo "LARGE_STORAGE: $LARGE_STORAGE"
+	echo "PREHEATING_DATA: $PREHEATING_DATA"
 	echo "############################################################################"
 	echo ""
 }
@@ -364,6 +370,9 @@ else
 	check_dir
 	echo_variables
 fi
+if [ "$PREHEATING_DATA" == "true" ]; then
+    SINGLE_USER_ITERATIONS=`expr $SINGLE_USER_ITERATIONS + 1`
+fi
 if [ "$PGDATABASE" == "mars2_s1000" ]; then
     GEN_DATA_SCALE=1000
     SINGLE_USER_ITERATIONS=2
@@ -371,6 +380,13 @@ fi
 if [ "$TPCH_RUN_ID" == "" ]; then
     TPCH_RUN_ID=$(date "+%Y-%m-%d-%H-%M-%S")
 fi
+if [ "$GEN_DATA_SCALE" == "100" ]; then
+    TPCH_SESSION_GUCS="set statement_mem to '1GB';"
+fi
+if [ "$GEN_DATA_SCALE" == "1000" ]; then
+    TPCH_SESSION_GUCS="set statement_mem to '2GB';"
+fi
+
 export GREENPLUM_PATH=$GREENPLUM_PATH
-cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $CREATE_TBL $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY $TPCH_RUN_ID "$TPCH_SESSION_GUCS" $PURE_SCRIPT_MODE
+cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $CREATE_TBL $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY $TPCH_RUN_ID "$TPCH_SESSION_GUCS" $PREHEATING_DATA $PURE_SCRIPT_MODE
 
