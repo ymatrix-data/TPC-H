@@ -111,8 +111,13 @@ DATABASE= PIVOTAL
 MACHINE = LINUX
 WORKLOAD = TPCH
 #
-CFLAGS	= -g -DDBNAME=\"dss\" -D$(MACHINE) -D$(DATABASE) -D$(WORKLOAD) -DRNG_TEST -D_FILE_OFFSET_BITS=64 
+ifeq ($(DB),matrixdb)
+    CFLAGS = -g -DDBNAME=\"dss\" -D$(MACHINE) -D$(DATABASE) -D$(WORKLOAD) -DRNG_TEST -D_FILE_OFFSET_BITS=64 -DEOL_HANDLING
+else
+    CFLAGS = -g -DDBNAME=\"dss\" -D$(MACHINE) -D$(DATABASE) -D$(WORKLOAD) -DRNG_TEST -D_FILE_OFFSET_BITS=64
+endif
 LDFLAGS = -O
+
 # The OBJ,EXE and LIB macros will need to be changed for compilation under
 #  Windows NT
 OBJ     = .o

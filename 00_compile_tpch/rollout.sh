@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+GEN_DATA_SCALE=${1}
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
 PURE_SCRIPT_MODE=${20}
@@ -20,7 +21,11 @@ make_tpc()
 	#compile dbgen
 	cd $PWD/dbgen
 	rm -f *.o
-	make
+	if [[ $GEN_DATA_SCALE == 1000 && $DATABASE_TYPE == matrixdb ]]; then
+		make DB=matrixdb
+	else
+		make
+	fi
 	cd ..
 }
 copy_queries()
