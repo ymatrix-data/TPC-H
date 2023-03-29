@@ -4,6 +4,7 @@ set -e
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
 ADD_FOREIGN_KEY=${16}
+DATABASE_TYPE=${20}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -25,6 +26,23 @@ else
 	echo "ERROR: Unsupported VERSION $VERSION!"
 	exit 1
 fi
+
+function do_mxgate_import()
+{
+    MASTER_HOST=$(psql -v ON_ERROR_STOP=1 -t -A -c "SELECT DISTINCT hostname FROM gp_segment_configuration WHERE role = 'p' AND content = -1")
+
+    echo "copy mxgate load data scripts to the primary segment"
+    for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
+      SEGMENT_HOST=$(echo $i | awk -F '|' '{print $2}')
+      GEN_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
+      GEN_DATA_PATH=$GEN_DATA_PATH/pivotalguru
+      scp $PWD/mxgate_load.sh $ADMIN_USER@$SEGMENT_HOST:$EXT_HOST_DATA_DIR/
+      if [ "$PGDATABASE" == "" ]; then
+        PGDATABASE=mxadmin
+      fi
+      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $GEN_DATA_PATH'"
+    done
+}
 
 copy_script()
 {
@@ -71,21 +89,24 @@ start_gpfdist()
 }
 
 if [[ "$VERSION" == *"gpdb"* ]]; then
-	copy_script
-	start_gpfdist
+  if [ "$DATABASE_TYPE" == "matrixdb" ]; then
+    do_mxgate_import
+  else
+    copy_script
+    start_gpfdist
+    for i in $(ls $PWD/*.$filter.*.sql); do
+      start_log
 
-	for i in $(ls $PWD/*.$filter.*.sql); do
-		start_log
+      id=$(echo $i | awk -F '.' '{print $1}')
+      schema_name=$(echo $i | awk -F '.' '{print $2}')
+      table_name=$(echo $i | awk -F '.' '{print $3}')
 
-		id=$(echo $i | awk -F '.' '{print $1}')
-		schema_name=$(echo $i | awk -F '.' '{print $2}')
-		table_name=$(echo $i | awk -F '.' '{print $3}')
+      echo "psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print \$3}'"
+      tuples=$(psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print $3}'; exit ${PIPESTATUS[0]})
 
-		echo "psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print \$3}'"
-		tuples=$(psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print $3}'; exit ${PIPESTATUS[0]})
-
-		log $tuples
-	done
+      log $tuples
+    done
+  fi
 	if [[ $ADD_FOREIGN_KEY == "true" ]]; then
 	  	for i in $(ls $PWD/foreignkeys/*.$filter.*.sql); do
     		start_log
@@ -169,7 +190,7 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
 	for t in "${tables[@]}"
 	do
     psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan $schema_name.$t;"
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum analyze $schema_name.$t;"
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum $schema_name.$t;"
   done
 	tuples="0"
 	gpconfig -c gp_interconnect_type -v tcp
@@ -177,7 +198,7 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
   gpconfig -c enable_mergejoin -v off
   gpconfig -c enable_nestloop -v off
   gpconfig -c enable_parallel_hash -v off
-  gpconfig -c gp_enable_hashjoin_size_heuristic -v on
+  gpconfig -c gp_enable_hashjoin_size_heuristic -v on --skipvalidation
   gpconfig -c gp_cached_segworkers_threshold -v 50
   gpstop -u
 	log $tuples

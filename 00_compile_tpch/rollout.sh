@@ -4,7 +4,8 @@ set -e
 GEN_DATA_SCALE=${1}
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
-PURE_SCRIPT_MODE=${20}
+DATABASE_TYPE=${20}
+PURE_SCRIPT_MODE=${21}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -21,7 +22,7 @@ make_tpc()
 	#compile dbgen
 	cd $PWD/dbgen
 	rm -f *.o
-	if [[ $GEN_DATA_SCALE == 1000 && $DATABASE_TYPE == matrixdb ]]; then
+	if [[ "$DATABASE_TYPE" == "matrixdb" ]]; then
 		make DB=matrixdb
 	else
 		make
