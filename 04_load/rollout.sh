@@ -34,8 +34,8 @@ function do_mxgate_import()
           echo "ERROR: Unable to get matrixdb master host."
           exit 1
         fi
-    MASTER_POST=$PGPORT
-    if [ "$MASTER_POST" == "" ];then
+    MASTER_PORT=$PGPORT
+    if [ "$MASTER_PORT" == "" ];then
       echo "ERROR: Unable to determine PGPORT environment variable.  Be sure to have this set for the mxadmin user."
       exit 1
     fi
@@ -48,7 +48,7 @@ function do_mxgate_import()
       if [ "$PGDATABASE" == "" ]; then
         PGDATABASE=mxadmin
       fi
-      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_POST $GEN_DATA_PATH'"
+      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH'"
     done
 }
 

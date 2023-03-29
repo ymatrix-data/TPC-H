@@ -20,6 +20,12 @@ brew install coreutils
 
 ## Query Options
 
+
+### **NOTICE**: 
+```
+please export PGPORT, PGDATA, PGDATABASE according to your demands before run TPC-H
+```
+
 You can have the queries execute with "EXPLAIN ANALYZE" in order to see exactly the 
 query plan used, the cost, the memory used, etc.  This is done in tpch_variables.sh
 like this:
@@ -36,20 +42,90 @@ queries.
    
 2. The following gives you a glimpse of the meaning of each parameter:
 ```shell
-# the URL of our open source TPC-H repo, for potential upgrading. Automatically generated.
+
+# The URL of our open source TPC-H repo, for potential upgrading. Automatically generated.
 REPO_URL="https://github.com/ymatrix-data/TPC-H"
 
-# the name of administrator user. Automatically generated.
-ADMIN_USER="johndoe"
+# The name of administrator user, if not set will automatically generate from 'whoami'
+ADMIN_USER="mxadmin"
 
-# the directory you install this TPC-H project, as reminded before. You must configure it manually.
-INSTALL_DIR="/Users/johndoe/code/other/TPC-H"
+# The directory you install this TPC-H project, as reminded before. You must configure it manually.
+INSTALL_DIR="/mxdata/TPC-H"
 
-# the directory of our generated log files. Configurable.
-GEN_DATA_DIR=""
+# Set to true in order to see exactly the query plan used
+EXPLAIN_ANALYZE="false"
 
-# the directory for some scripts and binary files transferred to the external host, i.e. the host of the target database tested. Configurable.
-EXT_HOST_DATA_DIR=""
+# Distributes data randomly across all segments using round-robin distribution if set to true
+RANDOM_DISTRIBUTION="false"
+
+# The concurrency num to run TPC-H in parallel
+MULTI_USER_COUNT="1"
+
+# The data scale which generate for TPC-H benchmark
+GEN_DATA_SCALE="1"
+
+# How many times to run TPC-H queries
+SINGLE_USER_ITERATIONS="1"
+
+# Compile TPC-H or not : true/false
+RUN_COMPILE_TPCH="true"
+
+# Generate data or not : true/false
+RUN_GEN_DATA="false"
+
+# Init TPC-H or not : true/false
+RUN_INIT="true"
+
+# Execute DDL or not : true/false
+RUN_DDL="true"
+
+# Load data into tables or not : true/false
+RUN_LOAD="true"
+
+# Run TPC-H standard queries or not : true/false
+RUN_SQL="true"
+
+# Generate final report for single user or not : true/false
+RUN_SINGLE_USER_REPORT="true"
+
+# Run TPC-H queries with parallel mode or not : true/false
+RUN_MULTI_USER="true"
+
+# Generate final report for multiple users or not : true/false
+RUN_MULTI_USER_REPORT="true"
+
+# The location of greenplum_path.sh, will generate automatically via /opt/ymatrix/matrixdb-5.0.0+enterprise if not set
+GREENPLUM_PATH="//opt/ymatrix/matrixdb-5.0.0+enterprise/greenplum_path.sh"
+
+# For region/nation, eg: USING mars2. Empty means heap
+SMALL_STORAGE="USING mars2"
+
+# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap
+MEDIUM_STORAGE="USING mars2"
+
+# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap
+LARGE_STORAGE="USING mars2"
+
+# Enable ORCA or not : ON/OFF
+OPTIMIZER="off"
+
+# The directory of our generated log files. Configurable.
+GEN_DATA_DIR="/mxdata/TPC-H/generated"
+
+# Directory for some scripts and binary files transferred to the external host
+EXT_HOST_DATA_DIR="~"
+
+# Add foreign keys or not : true/false
+ADD_FOREIGN_KEY="false"
+
+# Insert the selected data from current TPC-H tables into a new table : true/false
+CREATE_TBL="false"
+
+# Warm up or not before actually run TPC-H standard queries: true/false
+PREHEATING_DATA="true"
+
+# Database type you want to run TPC-H benchmark, set empty means gpdb or postgresql
+DATABASE_TYPE="matrixdb"
 ```
 
 One more thing to remark: 

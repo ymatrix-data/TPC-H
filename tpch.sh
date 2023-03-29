@@ -23,6 +23,7 @@ check_variables()
 	fi
 	local count=$(grep "REPO_URL=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "## NOTE: Please export PGPORT, PGDATA, PGDATABASE according to your demands before run TPC-H" >> $MYVAR
 		echo "# The github repo url for ymatrix-data TPC-H" >> $MYVAR
 		echo "REPO_URL=\"https://github.com/ymatrix-data/TPC-H\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
