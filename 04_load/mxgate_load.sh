@@ -3,7 +3,8 @@ set -e
 
 DATABASE=$1
 MASTER_HOST=$2
-GEN_DATA_PATH=$3
+MASTER_PORT=$3
+GEN_DATA_PATH=$4
 
 for f in `ls $GEN_DATA_PATH | grep tbl`
     do
@@ -13,7 +14,7 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --format csv \
       --db-database $DATABASE \
       --db-master-host $MASTER_HOST \
-      --db-master-port 5432 \
+      --db-master-port $MASTER_PORT \
       --db-user mxadmin \
       --time-format raw \
       --delimiter "|" \

@@ -30,7 +30,15 @@ fi
 function do_mxgate_import()
 {
     MASTER_HOST=$(psql -v ON_ERROR_STOP=1 -t -A -c "SELECT DISTINCT hostname FROM gp_segment_configuration WHERE role = 'p' AND content = -1")
-
+    if [ "$MASTER_HOST" == "" ];then
+          echo "ERROR: Unable to get matrixdb master host."
+          exit 1
+        fi
+    MASTER_POST=$PGPORT
+    if [ "$MASTER_POST" == "" ];then
+      echo "ERROR: Unable to determine PGPORT environment variable.  Be sure to have this set for the mxadmin user."
+      exit 1
+    fi
     echo "copy mxgate load data scripts to the primary segment"
     for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
       SEGMENT_HOST=$(echo $i | awk -F '|' '{print $2}')
@@ -40,7 +48,7 @@ function do_mxgate_import()
       if [ "$PGDATABASE" == "" ]; then
         PGDATABASE=mxadmin
       fi
-      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $GEN_DATA_PATH'"
+      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_POST $GEN_DATA_PATH'"
     done
 }
 
