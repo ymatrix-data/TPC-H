@@ -216,16 +216,6 @@ check_variables()
     echo "DATABASE_TYPE=\"matrixdb\"" >> $MYVAR
     new_variable=$(($new_variable + 1))
   fi
-
-  gpconfig -c gp_interconnect_type -v tcp
-  gpconfig -c enable_indexscan -v off
-  gpconfig -c enable_mergejoin -v off
-  gpconfig -c enable_nestloop -v off
-  gpconfig -c enable_parallel_hash -v off
-  gpconfig -c gp_enable_hashjoin_size_heuristic -v on --skipvalidation
-  gpconfig -c gp_cached_segworkers_threshold -v 50
-  gpconfig -c max_parallel_workers_per_gather -v 3
-  gpstop -u
 }
 
 request_user_check_variables()
@@ -395,11 +385,22 @@ check_dir(){
 		mkdir $GEN_DATA_DIR
   fi
 }
+set_gucs(){
+  gpconfig -c gp_interconnect_type -v tcp
+  gpconfig -c enable_indexscan -v off
+  gpconfig -c enable_mergejoin -v off
+  gpconfig -c enable_nestloop -v off
+  gpconfig -c enable_parallel_hash -v off
+  gpconfig -c gp_enable_hashjoin_size_heuristic -v on --skipvalidation
+  gpconfig -c gp_cached_segworkers_threshold -v 50
+  gpconfig -c max_parallel_workers_per_gather -v 3
+  gpstop -u
+}
 
 ##################################################################################################################################################
 # Body
 ##################################################################################################################################################
-
+export GREENPLUM_PATH=$GREENPLUM_PATH
 if [ "$PURE_SCRIPT_MODE·" == "" ];then
 	#check_user
 	check_variables
@@ -428,7 +429,9 @@ fi
 if [ "$GEN_DATA_SCALE" == "1000" ]; then
     TPCH_SESSION_GUCS="set statement_mem to '2GB';"
 fi
+if [ "$DATABASE_TYPE" == "matrixdb" ]; then
+  set_gucs
+fi
 
-export GREENPLUM_PATH=$GREENPLUM_PATH
 cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $CREATE_TBL $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY $TPCH_RUN_ID "$TPCH_SESSION_GUCS" $PREHEATING_DATA $DATABASE_TYPE $PURE_SCRIPT_MODE
 
