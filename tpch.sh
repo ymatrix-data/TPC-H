@@ -30,7 +30,7 @@ check_variables()
 	local count=$(grep "ADMIN_USER=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		ADMIN_USER=$(whoami)
-		echo "# Current host name, if not set will automatically get from `whoami`" >> $MYVAR
+		echo "# Current hostname, if not set will automatically get from 'whoami'" >> $MYVAR
 		echo "ADMIN_USER=\"$ADMIN_USER\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
@@ -53,19 +53,19 @@ check_variables()
 	fi
 	local count=$(grep "RANDOM_DISTRIBUTION=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "# Distributes data randomly across all segments using round-robin distribution if set true" >> $MYVAR
+		echo "# Distributes data randomly across all segments using round-robin distribution if set to true" >> $MYVAR
 		echo "RANDOM_DISTRIBUTION=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "MULTI_USER_COUNT" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "# The parallel num to run TPC-H" >> $MYVAR
+		echo "# The concurrency num to run TPC-H in parallel" >> $MYVAR
 		echo "MULTI_USER_COUNT=\"1\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "GEN_DATA_SCALE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "# The data scale to generate for TPC-H benchmark"  >> $MYVAR
+		echo "# The data scale which generate for TPC-H benchmark"  >> $MYVAR
 		echo "GEN_DATA_SCALE=\"1\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
