@@ -201,14 +201,6 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
     psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum $schema_name.$t;"
   done
 	tuples="0"
-	gpconfig -c gp_interconnect_type -v tcp
-  gpconfig -c enable_indexscan -v off
-  gpconfig -c enable_mergejoin -v off
-  gpconfig -c enable_nestloop -v off
-  gpconfig -c enable_parallel_hash -v off
-  gpconfig -c gp_enable_hashjoin_size_heuristic -v on --skipvalidation
-  gpconfig -c gp_cached_segworkers_threshold -v 50
-  gpstop -u
 	log $tuples
 else
 	#postgresql analyze

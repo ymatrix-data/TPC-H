@@ -187,6 +187,15 @@ check_variables()
     echo "DATABASE_TYPE=\"matrixdb\"" >> $MYVAR
     new_variable=$(($new_variable + 1))
   fi
+  gpconfig -c gp_interconnect_type -v tcp
+  gpconfig -c enable_indexscan -v off
+  gpconfig -c enable_mergejoin -v off
+  gpconfig -c enable_nestloop -v off
+  gpconfig -c enable_parallel_hash -v off
+  gpconfig -c gp_enable_hashjoin_size_heuristic -v on --skipvalidation
+  gpconfig -c gp_cached_segworkers_threshold -v 50
+  gpconfig -c max_parallel_workers_per_gather -v 3
+  gpstop -u
 }
 
 request_user_check_variables()
