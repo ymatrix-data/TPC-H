@@ -149,21 +149,21 @@ check_variables()
 	local count=$(grep "SMALL_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# For region/nation, eg: USING mars2. Empty means heap" >> $MYVAR
-		echo "SMALL_STORAGE=\"\"" >> $MYVAR
+		echo "SMALL_STORAGE=\"USING mars2\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#11
 	local count=$(grep "MEDIUM_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap" >> $MYVAR
-		echo "MEDIUM_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
+		echo "MEDIUM_STORAGE=\"USING mars2\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#12
 	local count=$(grep "LARGE_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap" >> $MYVAR
-		echo "LARGE_STORAGE=\"with(appendonly=true, orientation=column,  compresstype=zstd, COMPRESSLEVEL=1)\"" >> $MYVAR
+		echo "LARGE_STORAGE=\"USING mars2\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#13
