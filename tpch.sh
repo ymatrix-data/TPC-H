@@ -23,12 +23,15 @@ check_variables()
 	fi
 	local count=$(grep "REPO_URL=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "## NOTE: Please export PGPORT, PGDATA, PGDATABASE according to your demands before run TPC-H" >> $MYVAR
+		echo "# The github repo url for ymatrix-data TPC-H" >> $MYVAR
 		echo "REPO_URL=\"https://github.com/ymatrix-data/TPC-H\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "ADMIN_USER=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		ADMIN_USER=$(whoami)
+		echo "# Current hostname, if not set will automatically get from 'whoami'" >> $MYVAR
 		echo "ADMIN_USER=\"$ADMIN_USER\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
@@ -39,154 +42,181 @@ check_variables()
 		else
 		  INSTALL_DIR=$(dirname $(readlink -f $0))
 		fi
+		echo "# TPC-H install directory" >> $MYVAR
 		echo "INSTALL_DIR=\"$INSTALL_DIR\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "EXPLAIN_ANALYZE=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Set to true in order to see exactly the query plan used" >> $MYVAR
 		echo "EXPLAIN_ANALYZE=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "RANDOM_DISTRIBUTION=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Distributes data randomly across all segments using round-robin distribution if set to true" >> $MYVAR
 		echo "RANDOM_DISTRIBUTION=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "MULTI_USER_COUNT" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# The concurrency num to run TPC-H in parallel" >> $MYVAR
 		echo "MULTI_USER_COUNT=\"1\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "GEN_DATA_SCALE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# The data scale which generate for TPC-H benchmark"  >> $MYVAR
 		echo "GEN_DATA_SCALE=\"1\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "SINGLE_USER_ITERATIONS" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# How many times to run TPC-H queries" >> $MYVAR
 		echo "SINGLE_USER_ITERATIONS=\"1\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#00
 	local count=$(grep "RUN_COMPILE_TPCH" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Compile TPC-H or not : true/false" >> $MYVAR
 		echo "RUN_COMPILE_TPCH=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#01
 	local count=$(grep "RUN_GEN_DATA" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Generate data or not : true/false" >> $MYVAR
 		echo "RUN_GEN_DATA=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#02
 	local count=$(grep "RUN_INIT" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Init TPC-H or not : true/false" >> $MYVAR
 		echo "RUN_INIT=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#03
 	local count=$(grep "RUN_DDL" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Execute DDL or not : true/false" >> $MYVAR
 		echo "RUN_DDL=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#04
 	local count=$(grep "RUN_LOAD" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Load data into tables or not : true/false" >> $MYVAR
 		echo "RUN_LOAD=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#05
 	local count=$(grep "RUN_SQL" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Run TPC-H standard queries or not : true/false" >> $MYVAR
 		echo "RUN_SQL=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#06
 	local count=$(grep "RUN_SINGLE_USER_REPORT" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Generate final report for single user or not : true/false" >> $MYVAR
 		echo "RUN_SINGLE_USER_REPORT=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#07
 	local count=$(grep "RUN_MULTI_USER" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Run TPC-H queries with parallel mode or not : true/false" >> $MYVAR
 		echo "RUN_MULTI_USER=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#08
 	local count=$(grep "RUN_MULTI_USER_REPORT" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Generate final report for multiple users or not : true/false" >> $MYVAR
 		echo "RUN_MULTI_USER_REPORT=\"true\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#09
 	local count=$(grep "GREENPLUM_PATH" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# The location of greenplum_path.sh, will generate automatically via $GPHOME if not set" >> $MYVAR
 		echo "GREENPLUM_PATH=\"/$GPHOME/greenplum_path.sh\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#10
 	local count=$(grep "SMALL_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# For region/nation, eg: USING mars2. Empty means heap" >> $MYVAR
 		echo "SMALL_STORAGE=\"USING mars2\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#11
 	local count=$(grep "MEDIUM_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "MEDIUM_STORAGE=\"USING mars2\" # For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap" >> $MYVAR
+		echo "# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap" >> $MYVAR
+		echo "MEDIUM_STORAGE=\"USING mars2\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#12
 	local count=$(grep "LARGE_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "LARGE_STORAGE=\"USING mars2\" # For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap" >> $MYVAR
+		echo "# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap" >> $MYVAR
+		echo "LARGE_STORAGE=\"USING mars2\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#13
 	local count=$(grep "OPTIMIZER" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Enable ORCA or not : ON/OFF" >> $MYVAR
 		echo "OPTIMIZER=\"off\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#14
 	local count=$(grep "GEN_DATA_DIR" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Directory for generated data" >> $MYVAR
 		echo "GEN_DATA_DIR=\"$PWD/generated\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#15
 	local count=$(grep "EXT_HOST_DATA_DIR" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Directory for some scripts and binary files transferred to the external host" >> $MYVAR
 		echo "EXT_HOST_DATA_DIR=\"~\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#16
 	local count=$(grep "ADD_FOREIGN_KEY" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Add foreign keys or not : true/false" >> $MYVAR
 		echo "ADD_FOREIGN_KEY=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#17
 	local count=$(grep "CREATE_TBL=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
+		echo "# Insert the selected data from current TPC-H tables into a new table : true/false" >> $MYVAR
 		echo "CREATE_TBL=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#18
   local count=$(grep "PREHEATING_DATA=" $MYVAR | wc -l)
   if [ "$count" -eq "0" ]; then
+    echo "# Warm up or not before actually run TPC-H standard queries: true/false" >> $MYVAR
     echo "PREHEATING_DATA=\"true\"" >> $MYVAR
     new_variable=$(($new_variable + 1))
-  fi
+ fi
   #19
   local count=$(grep "DATABASE_TYPE=" $MYVAR | wc -l)
   if [ "$count" -eq "0" ]; then
+    echo "# Database type you want to run TPC-H benchmark, set empty means gpdb or postgresql" >> $MYVAR
     echo "DATABASE_TYPE=\"matrixdb\"" >> $MYVAR
     new_variable=$(($new_variable + 1))
   fi
+
   gpconfig -c gp_interconnect_type -v tcp
   gpconfig -c enable_indexscan -v off
   gpconfig -c enable_mergejoin -v off
