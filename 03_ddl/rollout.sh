@@ -14,12 +14,23 @@ SMALL_STORAGE=$7
 MEDIUM_STORAGE=$8
 LARGE_STORAGE=$9
 GEN_DATA_DIR=${12}
-MARS2_ENCODING_MINMAX="encoding(minmax)"
+DATABASE_TYPE=${20}
+
 
 if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
 	echo "You must provide the scale as a parameter in terms of Gigabytes, true/false to run queries with EXPLAIN ANALYZE option, true/false to use random distrbution, multi-user count, and the number of sql iterations."
 	echo "Example: ./rollout.sh 100 false false 5 1"
 	exit 1
+fi
+
+MARS2_ENCODING_MINMAX=""
+if [ "$DATABASE_TYPE" == "matrixdb" ]; then
+  if [[ "$GEN_DATA_SCALE" == "100" ]]; then
+      MARS2_ENCODING_MINMAX="encoding(minmax)"
+    fi
+  if [[ "$GEN_DATA_SCALE" == "1000" ]]; then
+    MARS2_ENCODING_MINMAX="encoding(minmax,compresstype=zstd,compresslevel=1)"
+  fi
 fi
 
 step=ddl
@@ -55,10 +66,10 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 		fi
 
 		if [[ "$SMALL_STORAGE" != *"mars2"* && "$MEDIUM_STORAGE" != *"mars2"* && "$LARGE_STORAGE" != *"mars2"* ]]; then
-		    CREATE_EXTENSION=""
+		  CREATE_EXTENSION=""
 			CREATE_MARS2_BTREE_INDEX=""
 		else
-		    CREATE_EXTENSION="CREATE EXTENSION IF NOT EXISTS matrixts"
+		  CREATE_EXTENSION="CREATE EXTENSION IF NOT EXISTS matrixts"
 			CREATE_MARS2_BTREE_INDEX=""
 			for z in $(cat $PWD/mars2_btree_index.txt); do
 				table_name2=$(echo $z | awk -F '|' '{print $2}')

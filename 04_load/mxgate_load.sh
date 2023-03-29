@@ -18,5 +18,5 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --time-format raw \
       --delimiter "|" \
       --target tpch.$table_name \
-      --parallel 64 < $f
+      --parallel 64 < $GEN_DATA_PATH/$f
     done
