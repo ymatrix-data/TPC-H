@@ -46,7 +46,11 @@ function do_mxgate_import()
       GEN_DATA_PATH=$GEN_DATA_PATH/pivotalguru
       scp $PWD/mxgate_load.sh $ADMIN_USER@$SEGMENT_HOST:$EXT_HOST_DATA_DIR/
       if [ "$PGDATABASE" == "" ]; then
-        PGDATABASE=mxadmin
+        if [ "$PGUSER" != "" ]; then
+          PGDATABASE=$PGUSER
+        else
+          PGDATABASE=$ADMIN_USER
+        fi
       fi
       ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH'"
     done
