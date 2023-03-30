@@ -121,6 +121,7 @@ create_hosts_file()
 		echo $MASTER_HOST > $LOCAL_PWD/segment_hosts.txt
 	fi
 }
+
 get_cpu_cores_num()
 {
   cores=$(nproc)
@@ -133,6 +134,5 @@ get_cpu_cores_num()
        cores=`expr $cfs_quota_us / $cfs_period_us`
     fi
   fi
-  echo cores
+  echo $cores
 }
-

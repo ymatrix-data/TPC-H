@@ -5,6 +5,7 @@ PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 PURE_SCRIPT_MODE="$1"
 VAR_PATH="$2"
+source $PWD/functions.sh
 
 MYCMD="tpch.sh"
 MYVAR="tpch_variables.sh"
@@ -429,16 +430,7 @@ EOF
 
 set_gucs(){
 	# Get the number of CPU cores
-    cores=$(nproc)
-    cpu_cgroup_path=/sys/fs/cgroup/cpu
-    if [ -f ${cpu_cgroup_path}/cpu.cfs_quota_us ]  && [ -f ${cpu_cgroup_path}/cpu.cfs_period_us ] ; then
-      cfs_quota_us=$(cat ${cpu_cgroup_path}/cpu.cfs_quota_us)
-      cfs_period_us=$(cat ${cpu_cgroup_path}/cpu.cfs_period_us)
-      # judge whether inside a docker container, cpu cores is differ from physical machine
-      if [ $cfs_quota_us -ne -1 ] && [ $cfs_period_us -ne 0 ]; then
-         cores=`expr $cfs_quota_us / $cfs_period_us`
-      fi
-    fi
+    cores=$(get_cpu_cores_num)
 
     # Query the number of segments in the database
     segnum=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from gp_segment_configuration WHERE role = 'p' AND content >= 0;")
