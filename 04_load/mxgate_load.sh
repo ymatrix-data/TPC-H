@@ -5,6 +5,7 @@ DATABASE=$1
 MASTER_HOST=$2
 MASTER_PORT=$3
 GEN_DATA_PATH=$4
+CORES=$5
 
 for f in `ls $GEN_DATA_PATH | grep tbl`
     do
@@ -19,5 +20,5 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --time-format raw \
       --delimiter "|" \
       --target tpch.$table_name \
-      --parallel 64 < $GEN_DATA_PATH/$f
+      --parallel CORES < $GEN_DATA_PATH/$f
     done
