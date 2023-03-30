@@ -24,12 +24,12 @@ brew install coreutils
     ```
 2. Generate configuration file `tpch_variables.sh`  
     ```
-    ./tpch.sh -db matrixdb -s 100
+    ./tpch.sh -d matrixdb -s 100
     ```
     Args:
     ```
-    -db [DATABASE_TYPE] 
-        Database you want to test, such as matrixdb, gpdb or postgresql.
+    -d [DATABASE_TYPE] 
+        Database you want to run TPC-H, such as matrixdb, greenplum, postgresql.
     -s [DATA_SCALE]
         TPC-H dataset scale you want to generate, such as 1GB, 100GB, 1000GB.
     ```

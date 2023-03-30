@@ -67,7 +67,11 @@ check_variables()
 	local count=$(grep "GEN_DATA_SCALE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# The data scale which generate for TPC-H benchmark"  >> $MYVAR
-		echo "GEN_DATA_SCALE=\"1\"" >> $MYVAR
+		if [ -n "$GEN_DATA_SCALE" ]; then
+    		echo "GEN_DATA_SCALE=\"$GEN_DATA_SCALE\"" >> $MYVAR
+		else
+			echo "GEN_DATA_SCALE=\"1\"" >> $MYVAR
+		fi
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "SINGLE_USER_ITERATIONS" $MYVAR | wc -l)
@@ -150,21 +154,39 @@ check_variables()
 	local count=$(grep "SMALL_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# For region/nation, eg: USING mars2. Empty means heap" >> $MYVAR
-		echo "SMALL_STORAGE=\"USING mars2\"" >> $MYVAR
+		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
+			echo "SMALL_STORAGE=\"USING mars2 WITH (compress_threshold=12000)\"" >> $MYVAR
+		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
+			echo "SMALL_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
+		else
+			echo "SMALL_STORAGE=\"\"" >> $MYVAR
+		fi
 		new_variable=$(($new_variable + 1))
 	fi
 	#11
 	local count=$(grep "MEDIUM_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap" >> $MYVAR
-		echo "MEDIUM_STORAGE=\"USING mars2\"" >> $MYVAR
+		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
+			echo "MEDIUM_STORAGE=\"USING mars2 WITH (compress_threshold=12000)\"" >> $MYVAR
+		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
+			echo "MEDIUM_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
+		else
+			echo "MEDIUM_STORAGE=\"\"" >> $MYVAR
+		fi
 		new_variable=$(($new_variable + 1))
 	fi
 	#12
 	local count=$(grep "LARGE_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap" >> $MYVAR
-		echo "LARGE_STORAGE=\"USING mars2\"" >> $MYVAR
+		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
+			echo "LARGE_STORAGE=\"USING mars2 WITH (compress_threshold=12000)\"" >> $MYVAR
+		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
+			echo "LARGE_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
+		else
+			echo "LARGE_STORAGE=\"\"" >> $MYVAR
+		fi
 		new_variable=$(($new_variable + 1))
 	fi
 	#13
@@ -203,19 +225,23 @@ check_variables()
 		new_variable=$(($new_variable + 1))
 	fi
 	#18
-  local count=$(grep "PREHEATING_DATA=" $MYVAR | wc -l)
-  if [ "$count" -eq "0" ]; then
-    echo "# Warm up or not before actually run TPC-H standard queries: true/false" >> $MYVAR
-    echo "PREHEATING_DATA=\"true\"" >> $MYVAR
-    new_variable=$(($new_variable + 1))
- fi
-  #19
-  local count=$(grep "DATABASE_TYPE=" $MYVAR | wc -l)
-  if [ "$count" -eq "0" ]; then
-    echo "# Database type you want to run TPC-H benchmark, set empty means gpdb or postgresql" >> $MYVAR
-    echo "DATABASE_TYPE=\"matrixdb\"" >> $MYVAR
-    new_variable=$(($new_variable + 1))
-  fi
+  	local count=$(grep "PREHEATING_DATA=" $MYVAR | wc -l)
+  	if [ "$count" -eq "0" ]; then
+    	echo "# Warm up or not before actually run TPC-H standard queries: true/false" >> $MYVAR
+    	echo "PREHEATING_DATA=\"true\"" >> $MYVAR
+    	new_variable=$(($new_variable + 1))
+ 	fi
+  	#19
+  	local count=$(grep "DATABASE_TYPE=" $MYVAR | wc -l)
+  	if [ "$count" -eq "0" ]; then
+    	echo "# Database type you want to run TPC-H benchmark, set empty means gpdb or postgresql" >> $MYVAR
+		if [ -n "$DATABASE_TYPE" ]; then
+    		echo "DATABASE_TYPE=\"$DATABASE_TYPE\"" >> $MYVAR
+		else
+			echo "DATABASE_TYPE=\"matrixdb\"" >> $MYVAR
+		fi
+    	new_variable=$(($new_variable + 1))
+  	fi
 }
 
 request_user_check_variables()
@@ -427,9 +453,87 @@ set_gucs(){
   	gpstop -u
 }
 
+function show_help()
+{
+    cat << EOF
+TPC-H benchmark scripts for YMatrix, Greenplum and PostgreSQL databases.
+
+Args:
+   -h
+      Show help messages.
+
+   -d [database_type]
+
+      Required, the database which TPC-H benchmark against, supported database are matrixdb, greenplum, postgresql.
+
+   -s [scale] 
+      Required, scale of the generated dataset in gigabytes, and specify this option to run benchmark against a desired dataset with specified scale.
+
+Usage:
+    
+	Run TPC-H against matrixdb with scale 100
+	
+	1. generate configuration file tpch_variables.sh
+		"./tpch.sh -d matrixdb -s 100"
+		
+	2. run tpch benchmark based on configuration file tpch_variables.sh
+		"./tpch.sh"
+	
+EOF
+}
+
+function parse_args()
+{
+    OPTIND=1
+    while getopts ":d:s:h" opt; do
+    case "$opt" in
+        s) GEN_DATA_SCALE="$OPTARG";;
+        d) DATABASE_TYPE="$OPTARG";;
+        h) 
+        show_help
+        exit 0
+        ;;
+        \?)
+        printf "%s\n" "Invalid Option! -$OPTARG" >&2
+        exit 1
+        ;;
+        :)
+        printf "%s\n" "-$OPTARG requires an argument" >&2
+        exit 1
+        ;;
+    esac
+    done
+    shift "$((OPTIND - 1))"
+
+	# Check if database_type is valid
+    if [[ "${DATABASE_TYPE}" != "matrixdb" && "${DATABASE_TYPE}" != "greenplum" && "${DATABASE_TYPE}" != "postgresql" ]]; then
+        printf "%s\n" "Invalid database: $DATABASE_TYPE" >&2
+		printf "Supported databases are matrixdb, greenplum, postgresql\n"
+        exit 1
+    fi
+}
+
+
 ##################################################################################################################################################
 # Body
 ##################################################################################################################################################
+
+if [ ! -f "$PWD/$MYVAR" ]; then
+	parse_args $@
+	echo $GEN_DATA_SCALE
+	if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
+		echo $DATABASE_TYPE	
+		check_variables
+	elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
+		echo $DATABASE_TYPE	
+		check_variables
+	else
+		echo $DATABASE_TYPE
+		check_variables	
+	fi
+	exit 0
+fi
+
 export GREENPLUM_PATH=$GREENPLUM_PATH
 if [ "$PURE_SCRIPT_MODE·" == "" ];then
 	#check_user
