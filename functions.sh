@@ -136,3 +136,12 @@ get_cpu_cores_num()
   fi
   echo $cores
 }
+
+make_guc_effect() {
+	mx_provider=$(psql -v ON_ERROR_STOP=1 -t -A -c "show mx_ha_provider;")
+	if [[ "${mx_provider}" == "external" ]]; then
+		mxstop -u
+	else
+		gpstop -u
+	fi
+}

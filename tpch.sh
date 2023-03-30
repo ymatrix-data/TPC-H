@@ -428,7 +428,7 @@ function round_up() {
 EOF
 }
 
-set_gucs(){
+function set_gucs(){
 	# Get the number of CPU cores
     cores=$(get_cpu_cores_num)
 
@@ -447,7 +447,8 @@ set_gucs(){
   	gpconfig -c gp_enable_hashjoin_size_heuristic -v on --skipvalidation
   	gpconfig -c gp_cached_segworkers_threshold -v 50
   	gpconfig -c max_parallel_workers_per_gather -v $parallel_workers
-  	gpstop -u
+	
+  	make_guc_effect
 }
 
 function show_help()
@@ -506,7 +507,7 @@ function parse_args()
 	DATABASE_TYPE=$(echo $DATABASE_TYPE | tr [A-Z] [a-z]) 
     if [[ "${DATABASE_TYPE}" != "matrixdb" && "${DATABASE_TYPE}" != "greenplum" && "${DATABASE_TYPE}" != "postgresql" ]]; then
 		printf "%s\n" "Invalid database: \"$DATABASE_TYPE\", supported databases are matrixdb, greenplum, postgresql." >&2
-		printf "Execute \"./tpch -h\" to show help messages.\n"
+		printf "Execute \"./tpch.sh -h\" to show help messages.\n"
 		exit 1
     fi
 }
@@ -521,7 +522,7 @@ if [ ! -f "$PWD/$MYVAR" ]; then
 	printf "%s\n" "Generate tpch_variables.sh for \"$DATABASE_TYPE\"." >&2
 	check_variables
 	printf "Generate tpch_variables.sh successfully. \n"
-	printf "%s\n" "Please review "$PWD/$MYVAR" to make sure the variables are meet your requirements."
+	printf "%s\n" "Please review or edit "$PWD/$MYVAR" to make sure the variables are meet your requirements."
 	printf "Then execute \"./tpch.sh\" to run TPC-H benchmark. \n"
 	exit 0
 fi

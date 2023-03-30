@@ -60,7 +60,7 @@ check_gucs()
 
 	if [ "$update_config" -eq "1" ]; then
 		echo "update cluster because of config changes"
-		gpstop -u
+		make_guc_effect
 	fi
 }
 copy_config()
