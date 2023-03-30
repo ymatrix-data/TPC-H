@@ -25,10 +25,9 @@ fi
 
 MARS2_ENCODING_MINMAX=""
 if [ "$DATABASE_TYPE" == "matrixdb" ]; then
-  if [[ "$GEN_DATA_SCALE" == "100" ]]; then
-      MARS2_ENCODING_MINMAX="encoding(minmax)"
-    fi
-  if [[ "$GEN_DATA_SCALE" == "1000" ]]; then
+  if [[ "$GEN_DATA_SCALE" -lt "1000" ]]; then
+    MARS2_ENCODING_MINMAX="encoding(minmax)"
+  else
     MARS2_ENCODING_MINMAX="encoding(minmax,compresstype=zstd,compresslevel=1)"
   fi
 fi
