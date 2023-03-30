@@ -17,7 +17,9 @@ new_variable="0"
 
 check_variables()
 {
-	if [ "$GEN_DATA_SCALE" -lt "1000" ]; then
+	if [ "$GEN_DATA_SCALE" == "" ]; then
+		storage="USING mars2"
+	elif [ "$GEN_DATA_SCALE" -lt "1000" ]; then
 		storage="USING mars2 WITH (compress_threshold=12000)"
 	else
 		storage="USING mars2 WITH (compress_threshold=12000,compresstype=zstd,compresslevel=1)"
@@ -516,10 +518,23 @@ function parse_args()
     fi
 }
 
+function print_notice() {
+	# Export environment variables
+	if [[ "${PGPORT}" == "" || "${PGDATA}" == "" || "${PGDATABASE}" == "" ]];then
+		printf "**********************************NOTICE**********************************\n"
+		printf "	Below environment variables are need to be exported:\n"
+		printf "		 \"PGPORT\"  \"PGDATA\"  \"PGDATABASE\"  \n"
+		printf "**************************************************************************\n"
+		exit 1
+	fi 
+}
+
 
 ##################################################################################################################################################
 # Body
 ##################################################################################################################################################
+
+print_notice
 
 if [ ! -f "$PWD/$MYVAR" ]; then
 	parse_args $@
