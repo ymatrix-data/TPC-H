@@ -33,6 +33,7 @@ if [ "$RUN_SQL" == "true" ]; then
   rm -f $GEN_DATA_DIR/log/*single.explain_analyze.log
   create_tbl=""
   insert_tbl=""
+  get_version
   mkdir -p $GEN_DATA_DIR/log/$RUN_ID
   for i in $(ls $PWD/*.tpch.*.sql); do
     for x in $(seq 1 $SINGLE_USER_ITERATIONS); do
@@ -46,13 +47,21 @@ if [ "$RUN_SQL" == "true" ]; then
       fi
       if [ "$EXPLAIN_ANALYZE" == "false" ]; then
         echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\"  -f $i | wc -l"
-        tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
+        if [[ "$VERSION" == *"gpdb"* ]];then
+          tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i | wc -l; exit ${PIPESTATUS[0]})
+        else 
+          tuples=$(psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
+        fi
       else
         myfilename=$(basename $i)
         mylogfile=$GEN_DATA_DIR/log/$RUN_ID/$myfilename.single.explain_analyze.log
         echo "gucs: ${SESSION_GUCS}" >> $mylogfile
         echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -v CREATE_TABLE=\"${create_tbl}\" -v INSERT_TABLE=\"${insert_tbl}\" -f $i > $mylogfile"
-        PGOPTIONS="-c optimizer=$OPTIMIZER" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i >> $mylogfile
+        if [[ "$VERSION" == *"gpdb"* ]];then
+          PGOPTIONS="-c optimizer=$OPTIMIZER" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i >> $mylogfile
+        else 
+          psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE"  -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i >> $mylogfile
+        fi
         tuples="0"
       fi
       if [ "$PREHEATING_DATA" == "true" ] && [ "$x" == "1" ]; then

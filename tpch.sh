@@ -522,8 +522,10 @@ function print_notice() {
 	# Export environment variables
 	if [[ "${PGPORT}" == "" || "${PGDATABASE}" == "" ]];then
 		printf "**********************************NOTICE**********************************\n"
-		printf "	Below environment variables are need to be exported:\n"
+		printf "	Below environment variables for are need to be exported:\n"
 		printf "		 \"PGPORT\"  \"PGDATABASE\"  \n"
+		printf "	Extra environment variables for Postgre to be exported:\n"
+		printf "                     \"PGDATA\" \n"
 		printf "**************************************************************************\n"
 		exit 1
 	fi 
