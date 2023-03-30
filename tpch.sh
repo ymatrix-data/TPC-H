@@ -256,6 +256,10 @@ request_user_check_variables()
 		echo "There are new variables in the tpch_variables.sh file.  Please review to ensure the values are correct and then re-run this script."
 		exit 1
 	fi
+  if [ "$PGPORT" == "" ];then
+    echo "ERROR: Unable to determine PGPORT environment variable.  Be sure to have this set for the mxadmin user."
+    exit 1
+  fi
 }
 
 source_variables()

@@ -20,5 +20,5 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --time-format raw \
       --delimiter "|" \
       --target tpch.$table_name \
-      --parallel CORES < $GEN_DATA_PATH/$f
+      --parallel $CORES < $GEN_DATA_PATH/$f
     done
