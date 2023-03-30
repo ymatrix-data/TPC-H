@@ -107,9 +107,28 @@ start_gpfdist()
 	fi
 }
 
+wait_mxgate_done()
+{
+	echo ""
+	echo "Now load data by mxgate, this may take a while."
+	echo -ne "Loading data "
+	tuples=$(($start_count + 1))
+	while [ "$tuples" -gt "$start_count" ]; do
+		echo -ne "."
+		sleep 5
+		tuples=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
+	done
+
+	echo ""
+	echo "Done loading data"
+	echo ""
+}
+
 if [[ "$VERSION" == *"gpdb"* ]]; then
   if [ "$DATABASE_TYPE" == "matrixdb" ]; then
     do_mxgate_import
+	start_count=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
+	wait_mxgate_done
   else
     copy_script
     start_gpfdist
