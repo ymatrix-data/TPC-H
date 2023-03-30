@@ -6,6 +6,7 @@ MASTER_HOST=$2
 MASTER_PORT=$3
 GEN_DATA_PATH=$4
 CORES=$5
+MASTER_USER=$6
 
 for f in `ls $GEN_DATA_PATH | grep tbl`
     do
@@ -16,7 +17,7 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --db-database $DATABASE \
       --db-master-host $MASTER_HOST \
       --db-master-port $MASTER_PORT \
-      --db-user mxadmin \
+      --db-user $MASTER_USER \
       --time-format raw \
       --delimiter "|" \
       --target tpch.$table_name \
