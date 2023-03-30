@@ -39,6 +39,7 @@ function do_mxgate_import()
       echo "ERROR: Unable to determine PGPORT environment variable.  Be sure to have this set for the mxadmin user."
       exit 1
     fi
+    CORES=$(get_cpu_cores_num)
     echo "copy mxgate load data scripts to the primary segment"
     for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
       SEGMENT_HOST=$(echo $i | awk -F '|' '{print $2}')
@@ -52,7 +53,7 @@ function do_mxgate_import()
           PGDATABASE=$ADMIN_USER
         fi
       fi
-      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH'"
+      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES'"
     done
 }
 
