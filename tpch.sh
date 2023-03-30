@@ -16,6 +16,11 @@ new_variable="0"
 
 check_variables()
 {
+	if [ "$GEN_DATA_SCALE" -lt "1000" ]; then
+		storage="USING mars2 WITH (compress_threshold=12000)"
+	else
+		storage="USING mars2 WITH (compress_threshold=12000,compresstype=zstd,compresslevel=1)"
+	fi
 	### Make sure variables file is available
 	if [ ! -f "$PWD/$MYVAR" ]; then
 		touch $PWD/$MYVAR
@@ -155,7 +160,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For region/nation, eg: USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "SMALL_STORAGE=\"USING mars2 WITH (compress_threshold=12000)\"" >> $MYVAR
+			echo "SMALL_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "SMALL_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
@@ -168,7 +173,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "MEDIUM_STORAGE=\"USING mars2 WITH (compress_threshold=12000)\"" >> $MYVAR
+			echo "MEDIUM_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "MEDIUM_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
@@ -181,7 +186,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "LARGE_STORAGE=\"USING mars2 WITH (compress_threshold=12000)\"" >> $MYVAR
+			echo "LARGE_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "LARGE_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
@@ -506,6 +511,7 @@ function parse_args()
     shift "$((OPTIND - 1))"
 
 	# Check if database_type is valid
+	DATABASE_TYPE=$(echo $DATABASE_TYPE | tr [A-Z] [a-z]) 
     if [[ "${DATABASE_TYPE}" != "matrixdb" && "${DATABASE_TYPE}" != "greenplum" && "${DATABASE_TYPE}" != "postgresql" ]]; then
 		printf "%s\n" "Invalid database: \"$DATABASE_TYPE\", supported databases are matrixdb, greenplum, postgresql." >&2
 		printf "Execute \"./tpch -h\" to show help messages.\n"
@@ -521,13 +527,7 @@ function parse_args()
 if [ ! -f "$PWD/$MYVAR" ]; then
 	parse_args $@
 	printf "%s\n" "Generate tpch_variables.sh for \"$DATABASE_TYPE\"." >&2
-	if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-		check_variables
-	elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
-		check_variables
-	else
-		check_variables	
-	fi
+	check_variables
 	printf "Generate tpch_variables.sh successfully. \n"
 	printf "%s\n" "Please review "$PWD/$MYVAR" to make sure the variables are meet your requirements."
 	printf "Then execute \"./tpch.sh\" to run TPC-H benchmark. \n"
