@@ -15,6 +15,10 @@ GREENPLUM_PATH=$6
 step=load
 init_log $step
 
+if [ "$ADMIN_USER" == "" ]; then
+  ADMIN_USER=$(whoami)
+fi
+
 ADMIN_HOME=$(eval echo ~$ADMIN_USER)
 
 get_version
@@ -43,16 +47,19 @@ function do_mxgate_import()
     echo "copy mxgate load data scripts to the primary segment"
     for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
       SEGMENT_HOST=$(echo $i | awk -F '|' '{print $2}')
-      GEN_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
-      GEN_DATA_PATH=$GEN_DATA_PATH/pivotalguru
-      scp $PWD/mxgate_load.sh $ADMIN_USER@$SEGMENT_HOST:$EXT_HOST_DATA_DIR/
-      if [ "$PGUSER" != "" ]; then
+      PRIMARY_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
+      GEN_DATA_PATH=$PRIMARY_DATA_PATH/pivotalguru
+      echo "scp $PWD/mxgate_load.sh $ADMIN_USER@$SEGMENT_HOST:$PRIMARY_DATA_PATH/"
+      scp $PWD/mxgate_load.sh $ADMIN_USER@$SEGMENT_HOST:$PRIMARY_DATA_PATH/
+      if [ "$PGUSER" == "" ]; then
         PGUSER=$ADMIN_USER
       fi
       if [ "$PGDATABASE" == "" ]; then
         PGDATABASE=$PGUSER
       fi
-      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $EXT_HOST_DATA_DIR/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'"
+      echo "***DATABASE_USER: $DATABASE_USER"
+      echo "ssh -n -f $SEGMENT_HOST \"bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'\""
+      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'"
     done
 }
 
