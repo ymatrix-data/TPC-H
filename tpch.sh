@@ -464,20 +464,20 @@ Args:
 
    -d [database_type]
 
-      Required, the database which TPC-H benchmark against, supported database are matrixdb, greenplum, postgresql.
+      Required, the database which TPC-H benchmark against, supported databases are matrixdb, greenplum, postgresql.
 
    -s [scale] 
       Required, scale of the generated dataset in gigabytes, and specify this option to run benchmark against a desired dataset with specified scale.
 
 Usage:
     
-	Run TPC-H against matrixdb with scale 100
+    Run TPC-H against matrixdb with scale 100
 	
-	1. generate configuration file tpch_variables.sh
-		"./tpch.sh -d matrixdb -s 100"
+    1. generate configuration file tpch_variables.sh
+        "./tpch.sh -d matrixdb -s 100"
 		
-	2. run tpch benchmark based on configuration file tpch_variables.sh
-		"./tpch.sh"
+    2. run tpch benchmark based on configuration file tpch_variables.sh
+        "./tpch.sh"
 	
 EOF
 }
@@ -507,9 +507,9 @@ function parse_args()
 
 	# Check if database_type is valid
     if [[ "${DATABASE_TYPE}" != "matrixdb" && "${DATABASE_TYPE}" != "greenplum" && "${DATABASE_TYPE}" != "postgresql" ]]; then
-        printf "%s\n" "Invalid database: $DATABASE_TYPE" >&2
-		printf "Supported databases are matrixdb, greenplum, postgresql\n"
-        exit 1
+		printf "%s\n" "Invalid database: \"$DATABASE_TYPE\", supported databases are matrixdb, greenplum, postgresql." >&2
+		printf "Execute \"./tpch -h\" to show help messages.\n"
+		exit 1
     fi
 }
 
@@ -520,17 +520,17 @@ function parse_args()
 
 if [ ! -f "$PWD/$MYVAR" ]; then
 	parse_args $@
-	echo $GEN_DATA_SCALE
+	printf "%s\n" "Generate tpch_variables.sh for \"$DATABASE_TYPE\"." >&2
 	if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-		echo $DATABASE_TYPE	
 		check_variables
 	elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
-		echo $DATABASE_TYPE	
 		check_variables
 	else
-		echo $DATABASE_TYPE
 		check_variables	
 	fi
+	printf "Generate tpch_variables.sh successfully. \n"
+	printf "%s\n" "Please review "$PWD/$MYVAR" to make sure the variables are meet your requirements."
+	printf "Then execute \"./tpch.sh\" to run TPC-H benchmark. \n"
 	exit 0
 fi
 

@@ -29,11 +29,13 @@ brew install coreutils
     Args:
     ```
     -d [DATABASE_TYPE] 
-        Database you want to run TPC-H, such as matrixdb, greenplum, postgresql.
+        The database which TPC-H benchmark against, supported databases are matrixdb, greenplum, postgresql.
     -s [DATA_SCALE]
-        TPC-H dataset scale you want to generate, such as 1GB, 100GB, 1000GB.
+        The scale of the generated dataset in gigabytes, and specify this option to run benchmark against a desired dataset with specified scale, such as 1GB, 100GB, 1000GB.
+    -h
+        Show help messages.
     ```
-2. You can review `tpch_variables.sh` or edit it based on your demands, please refer to `Options` section for more details.
+3. You can review or edit `tpch_variables.sh` to make sure the variables are meet your requirements, please refer to `Options` section for more details.
 
     Execute `tpch.sh` according to the generated tpch_variables.sh
    ```
