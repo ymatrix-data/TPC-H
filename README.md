@@ -19,7 +19,6 @@ brew install coreutils
 1. Export environment variables 
     ```
     export PGPORT=5432
-    export PGDATA=/mxdata
     export PGDATABASE=tpch_s100
     ```
 2. Generate configuration file `tpch_variables.sh`  
