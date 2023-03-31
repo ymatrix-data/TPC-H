@@ -274,6 +274,14 @@ request_user_check_variables()
   fi
 }
 
+print_title()
+{
+	echo "############################################################################"
+	echo "TPC-H Script for YMatrix, Greenplum and PostgreSQL"
+	echo "############################################################################"
+	echo ""
+}
+
 source_variables()
 {
 	echo "############################################################################"
@@ -406,6 +414,8 @@ script_check()
 echo_variables()
 {
 	echo "############################################################################"
+	echo "TPC-H configuration variables are setting as below shows"
+	echo "############################################################################"
 	echo "REPO: $REPO"
 	echo "REPO_URL: $REPO_URL"
 	echo "ADMIN_USER: $ADMIN_USER"
@@ -415,8 +425,26 @@ echo_variables()
 	echo "SMALL_STORAGE: $SMALL_STORAGE"
 	echo "MEDIUM_STORAGE: $MEDIUM_STORAGE"
 	echo "LARGE_STORAGE: $LARGE_STORAGE"
+	echo "DATABASE_TYPE: $DATABASE_TYPE"
+	echo "GEN_DATA_SCALE: $GEN_DATA_SCALE"
+	echo "EXPLAIN_ANALYZE: $EXPLAIN_ANALYZE"
+	echo "RANDOM_DISTRIBUTION: $RANDOM_DISTRIBUTION"
+	echo "MULTI_USER_COUNT: $MULTI_USER_COUNT"
+	echo "RUN_COMPILE_TPCH: $RUN_COMPILE_TPCH"
+	echo "RUN_GEN_DATA: $RUN_GEN_DATA"
+	echo "RUN_INIT: $RUN_INIT"
+	echo "RUN_DDL: $RUN_DDL"
+	echo "RUN_LOAD: $RUN_LOAD"
+	echo "RUN_SQL: $RUN_SQL"
+	echo "SINGLE_USER_ITERATIONS: $SINGLE_USER_ITERATIONS"
+	echo "RUN_SINGLE_USER_REPORT: $RUN_SINGLE_USER_REPORT"
+	echo "RUN_MULTI_USER: $RUN_MULTI_USER"
+	echo "RUN_MULTI_USER_REPORT: $RUN_MULTI_USER_REPORT"
+	echo "GREENPLUM_PATH: $GREENPLUM_PATH"
+	echo "CREATE_TBL: $CREATE_TBL"
 	echo "PREHEATING_DATA: $PREHEATING_DATA"
 	echo "DATABASE_TYPE: $DATABASE_TYPE"
+	echo "LOAD_DATA_TYPE: $LOAD_DATA_TYPE" 
 	echo "############################################################################"
 	echo ""
 }
@@ -435,29 +463,6 @@ function round_up() {
         base += 1;
     print base;
 EOF
-}
-
-function set_gucs(){
-	# Get the number of CPU cores
-    cores=$(get_cpu_cores_num)
-
-    # Query the number of segments in the database
-    segnum=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from gp_segment_configuration WHERE role = 'p' AND content >= 0;")
-
-    # Calculate the number of parallel workers to use
-    parallel_workers_float=$(echo "scale=2; $cores/2.0/$segnum" | bc)
-    parallel_workers=$(round_up $parallel_workers_float)
-
-  	gpconfig -c gp_interconnect_type -v tcp
-  	gpconfig -c enable_indexscan -v off
-  	gpconfig -c enable_mergejoin -v off
-  	gpconfig -c enable_nestloop -v off
-  	gpconfig -c enable_parallel_hash -v off
-  	gpconfig -c gp_enable_hashjoin_size_heuristic -v on --skipvalidation
-  	gpconfig -c gp_cached_segworkers_threshold -v 50
-  	gpconfig -c max_parallel_workers_per_gather -v $parallel_workers
-	
-  	make_guc_effect
 }
 
 function show_help()
@@ -552,6 +557,7 @@ if [ ! -f "$PWD/$MYVAR" ]; then
 fi
 
 export GREENPLUM_PATH=$GREENPLUM_PATH
+print_title
 if [ "$PURE_SCRIPT_MODE·" == "" ];then
 	#check_user
 	check_variables
@@ -575,14 +581,6 @@ if [ "$TPCH_RUN_ID" == "" ]; then
     TPCH_RUN_ID=$(date "+%Y-%m-%d-%H-%M-%S")
 fi
 
-if [ "$DATABASE_TYPE" == "matrixdb" ]; then
-  set_gucs
-  if [ "$GEN_DATA_SCALE" -lt "1000" ]; then
-      TPCH_SESSION_GUCS="set statement_mem to '1GB';"
-  else
-      TPCH_SESSION_GUCS="set statement_mem to '2GB';"
-  fi
-fi
 
 cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $CREATE_TBL $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY $TPCH_RUN_ID "$TPCH_SESSION_GUCS" $PREHEATING_DATA $DATABASE_TYPE $LOAD_DATA_TYPE $PURE_SCRIPT_MODE
 

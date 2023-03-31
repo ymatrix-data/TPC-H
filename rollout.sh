@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -e
+
+echo "############################################################################"
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/functions.sh
 source_bashrc
@@ -51,32 +53,7 @@ create_directories()
 }
 
 create_directories
-echo "############################################################################"
-echo "TPC-H Script for Pivotal Greenplum Database and Pivotal HAWQ."
-echo "############################################################################"
-echo ""
-echo "############################################################################"
-echo "GEN_DATA_SCALE: $GEN_DATA_SCALE"
-echo "EXPLAIN_ANALYZE: $EXPLAIN_ANALYZE"
-echo "RANDOM_DISTRIBUTION: $RANDOM_DISTRIBUTION"
-echo "MULTI_USER_COUNT: $MULTI_USER_COUNT"
-echo "RUN_COMPILE_TPCH: $RUN_COMPILE_TPCH"
-echo "RUN_GEN_DATA: $RUN_GEN_DATA"
-echo "RUN_INIT: $RUN_INIT"
-echo "RUN_DDL: $RUN_DDL"
-echo "RUN_LOAD: $RUN_LOAD"
-echo "RUN_SQL: $RUN_SQL"
-echo "SINGLE_USER_ITERATIONS: $SINGLE_USER_ITERATIONS"
-echo "RUN_SINGLE_USER_REPORT: $RUN_SINGLE_USER_REPORT"
-echo "RUN_MULTI_USER: $RUN_MULTI_USER"
-echo "RUN_MULTI_USER_REPORT: $RUN_MULTI_USER_REPORT"
-echo "GREENPLUM_PATH: $GREENPLUM_PATH"
-echo "CREATE_TBL: $CREATE_TBL"
-echo "PREHEATING_DATA: $PREHEATING_DATA"
-echo "DATABASE_TYPE: $DATABASE_TYPE"
-echo "LOAD_DATA_TYPE: $LOAD_DATA_TYPE" 
-echo "############################################################################"
-echo ""
+
 if [ "$RUN_COMPILE_TPCH" == "true" ]; then
 	rm -f $GEN_DATA_DIR/log/end_compile_tpch.log
 fi
@@ -105,6 +82,7 @@ if [ "$RUN_MULTI_USER_REPORT" == "true" ]; then
 	rm -f $GEN_DATA_DIR/log/end_multi_user_reports.log
 fi
 
+echo "Exchange ssh keys"
 get_version
 if [[ "$VERSION" == *"gpdb"* || "$VERSION" == "*oss*" ]]; then
 	echo "INFO: ssh keys are exchanged as part of database setup."
@@ -121,8 +99,20 @@ else
 		cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 	fi
 fi
+echo "############################################################################"
+echo ""
+
+if [ "$DATABASE_TYPE" == "matrixdb" ]; then
+		set_gucs
+		if [ "$GEN_DATA_SCALE" -lt "1000" ]; then
+			TPCH_SESSION_GUCS="set statement_mem to '1GB';"
+		else
+			TPCH_SESSION_GUCS="set statement_mem to '2GB';"
+		fi
+fi
 
 for i in $(ls -d $PWD/0*); do
-	echo "$i/rollout.sh"
+	echo "Run $i/rollout.sh"
+	echo ""
 	$i/rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $CREATE_TBL $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $RUN_SQL $RUN_SINGLE_USER_REPORT $ADD_FOREIGN_KEY $TPCH_RUN_ID "$TPCH_SESSION_GUCS" $PREHEATING_DATA $DATABASE_TYPE $LOAD_DATA_TYPE $PURE_SCRIPT_MODE
 done

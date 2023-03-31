@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "############################################################################"
+echo "Compiling TPC-H tools"
+echo "############################################################################"
+
 GEN_DATA_SCALE=${1}
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
@@ -57,6 +61,7 @@ clean_tpc(){
   popd
 }
 
+
 if [ "$PURE_SCRIPT_MODE" == "" ]; then
         make_tpc
 fi
@@ -67,3 +72,5 @@ clean_tpc
 log
 
 end_step $step
+echo "############################################################################"
+echo ""

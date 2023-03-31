@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "############################################################################"
+echo "Prerequisite before run TPC-H"
+echo "############################################################################"
+
 GEN_DATA_DIR=${12}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -82,7 +86,7 @@ set_search_path()
 get_version
 if [[ "$VERSION" == *"gpdb"* ]]; then
 	set_segment_bashrc
-#	check_gucs
+	#check_gucs
 	copy_config
 fi
 set_search_path
@@ -90,3 +94,6 @@ set_search_path
 log
 
 end_step $step
+
+echo "############################################################################"
+echo ""

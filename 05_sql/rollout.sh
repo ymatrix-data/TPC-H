@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo "############################################################################"
+echo "Run TPC-H queries for single user"
+echo "############################################################################"
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 source_bashrc
@@ -75,3 +78,6 @@ if [ "$RUN_SQL" == "true" ]; then
 else
   echo "skipping RUN_SQL step ..."
 fi
+
+echo "############################################################################"
+echo ""

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "############################################################################"
+echo "Generate single user report"
+echo "############################################################################"
+
 GEN_DATA_DIR=${12}
 RUN_SINGLE_USER_REPORT=${15}
 
@@ -64,3 +68,6 @@ if [ "$RUN_SINGLE_USER_REPORT" == "true" ]; then
 else
   echo "skipping RUN_SINGLE_USER_REPORT step ..."
 fi
+
+echo "############################################################################"
+echo ""

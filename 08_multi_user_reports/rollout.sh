@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "############################################################################"
+echo "Generate multi user report"
+echo "############################################################################"
+
 GEN_DATA_DIR=${12}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -41,3 +45,6 @@ psql -v ON_ERROR_STOP=1 -F $'\t' -A -P pager=off -f $PWD/detailed_report.sql
 echo ""
 
 end_step $step
+
+echo "############################################################################"
+echo ""
