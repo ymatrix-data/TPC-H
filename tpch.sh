@@ -3,8 +3,7 @@ set -e
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-PURE_SCRIPT_MODE="$1"
-VAR_PATH="$2"
+PURE_SCRIPT_MODE=""
 source $PWD/functions.sh
 
 MYCMD="tpch.sh"
@@ -282,13 +281,6 @@ source_variables()
 	echo "############################################################################"
 	echo ""
 	source $MYVAR
-	if [ "$VAR_PATH" != "" ]; then
-		echo "############################################################################"
-		echo "Sourcing $VAR_PATH"
-		echo "############################################################################"
-		echo ""
-		source $VAR_PATH
-	fi
 }
 
 check_user()
