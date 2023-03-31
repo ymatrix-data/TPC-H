@@ -91,10 +91,10 @@ RUN_SQL="true"
 RUN_SINGLE_USER_REPORT="true"
 
 # Run TPC-H queries with parallel mode or not : true/false
-RUN_MULTI_USER="true"
+RUN_MULTI_USER="false"
 
 # Generate final report for multiple users or not : true/false
-RUN_MULTI_USER_REPORT="true"
+RUN_MULTI_USER_REPORT="false"
 
 # The location of greenplum_path.sh, will generate automatically via /opt/ymatrix/matrixdb-5.0.0+enterprise if not set
 GREENPLUM_PATH="//opt/ymatrix/matrixdb-5.0.0+enterprise/greenplum_path.sh"
@@ -125,6 +125,9 @@ PREHEATING_DATA="true"
 
 # Database type you want to run TPC-H benchmark, set empty means gpdb or postgresql
 DATABASE_TYPE="matrixdb"
+
+# The type of load data into database, for matrixdb, mxgate or gpfdist are supported
+LOAD_DATA_TYPE="mxgate"
 ```
 
 One more thing to remark: 

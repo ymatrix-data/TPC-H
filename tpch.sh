@@ -141,14 +141,14 @@ check_variables()
 	local count=$(grep "RUN_MULTI_USER" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# Run TPC-H queries with parallel mode or not : true/false" >> $MYVAR
-		echo "RUN_MULTI_USER=\"true\"" >> $MYVAR
+		echo "RUN_MULTI_USER=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#08
 	local count=$(grep "RUN_MULTI_USER_REPORT" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
 		echo "# Generate final report for multiple users or not : true/false" >> $MYVAR
-		echo "RUN_MULTI_USER_REPORT=\"true\"" >> $MYVAR
+		echo "RUN_MULTI_USER_REPORT=\"false\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	#09

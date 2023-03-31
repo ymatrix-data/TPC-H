@@ -25,7 +25,6 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --parallel $CORES < $GEN_DATA_PATH/$f > mxgate.$f.log 2>&1 &
 
       pid=$!
-      echo $pid
       if [ "$pid" -ne "0" ]; then
 	      sleep .4
 	      count=$(ps -ef 2> /dev/null | grep -v grep | awk -F ' ' '{print $2}' | grep $pid | wc -l)
