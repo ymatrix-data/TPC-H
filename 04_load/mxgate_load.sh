@@ -27,15 +27,15 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       pid=$!
       #echo "mxgate pid is $pid"
       if [ "$pid" -ne "0" ]; then
-	      sleep .1
-	      count=$(ps -ef 2> /dev/null | grep -v grep | awk -F ' ' '{print $2}' | grep $pid | wc -l)
-	      if [ "$count" -eq "0" ]; then
+        sleep .1
+        count=$(ps -ef 2> /dev/null | grep -v grep | awk -F ' ' '{print $2}' | grep $pid | wc -l)
+        if [ "$count" -eq "0" ]; then
           echo "fail to start mxgate"
-		      exit 1
-	      fi
+          exit 1
+        fi
       else
-	      echo "unable to start background process for mxgate"
-	      exit 1
+        echo "unable to start background process for mxgate"
+        exit 1
       fi
     done
 
