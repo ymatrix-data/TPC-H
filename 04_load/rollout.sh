@@ -61,6 +61,11 @@ function do_mxgate_import()
       echo "***DATABASE_USER: $DATABASE_USER"
       echo "ssh -n -f $SEGMENT_HOST \"bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'\""
       ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'"
+	  status=$!
+	  echo "run mxgate status: $status"
+	  if [ "$status" != "0" ]; then
+	  	exit 1
+	  fi  
     done
 }
 
@@ -126,7 +131,7 @@ wait_mxgate_done()
 }
 
 if [[ "$VERSION" == *"gpdb"* ]]; then
-  if [ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]; then
+  if [[ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]]; then
   	do_mxgate_import
 	start_count=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
 	wait_mxgate_done
