@@ -455,15 +455,6 @@ check_dir(){
   fi
 }
 
-function round_up() {
-    bc << EOF
-    num = $1;
-    base = num / 1;
-    if (((num - base) * 10) > 1 )
-        base += 1;
-    print base;
-EOF
-}
 
 function show_help()
 {

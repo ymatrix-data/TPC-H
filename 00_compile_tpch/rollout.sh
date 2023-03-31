@@ -2,7 +2,7 @@
 set -e
 
 echo "############################################################################"
-echo "Compiling TPC-H tools"
+echo "Compile TPC-H tools"
 echo "############################################################################"
 
 GEN_DATA_SCALE=${1}
@@ -28,9 +28,32 @@ make_tpc()
 	cd $PWD/dbgen
 	rm -f *.o
 	if [[ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]]; then
-		make DB=matrixdb
+		make DB=matrixdb > $GEN_DATA_DIR/compile_dbgen.log 2>&1 &
 	else
-		make
+		make > $GEN_DATA_DIR/compile_dbgen.log 2>&1 &
+	fi
+
+	count=0
+	while true
+	do
+		if [ -f "dbgen" ] && [ -f "qgen" ]; then
+			echo "Compile dbgen and qgen successfully"
+			break
+		elif [ "$count" -lt "60" ];then
+			count=$((count+1))
+			echo "Continue compiling"
+			sleep 1
+		else
+			echo "Compile dbgen reach timeout"
+			exit 1
+		fi
+	done
+
+	#check error
+	error=$(grep -irn "error" $GEN_DATA_DIR/compile_dbgen.log | wc -l) 
+	if [ "$error" -ne "0" ]; then
+		echo "Compile dbgen failed, for more details, please refer to $GEN_DATA_DIR/compile_dbgen.log"
+		exit 1
 	fi
 	cd ..
 }
