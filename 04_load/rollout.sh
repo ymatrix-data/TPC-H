@@ -4,6 +4,8 @@ set -e
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
 ADD_FOREIGN_KEY=${16}
+DATABASE_TYPE=${20}
+LOAD_DATA_TYPE=${21}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -13,6 +15,10 @@ GREENPLUM_PATH=$6
 
 step=load
 init_log $step
+
+if [ "$ADMIN_USER" == "" ]; then
+  ADMIN_USER=$(whoami)
+fi
 
 ADMIN_HOME=$(eval echo ~$ADMIN_USER)
 
@@ -25,6 +31,43 @@ else
 	echo "ERROR: Unsupported VERSION $VERSION!"
 	exit 1
 fi
+
+function do_mxgate_import()
+{
+    MASTER_HOST=$(psql -v ON_ERROR_STOP=1 -t -A -c "SELECT DISTINCT hostname FROM gp_segment_configuration WHERE role = 'p' AND content = -1")
+    if [ "$MASTER_HOST" == "" ];then
+          echo "ERROR: Unable to get matrixdb master host."
+          exit 1
+        fi
+    MASTER_PORT=$PGPORT
+    if [ "$MASTER_PORT" == "" ];then
+      echo "ERROR: Unable to determine PGPORT environment variable.  Be sure to have this set for the mxadmin user."
+      exit 1
+    fi
+    CORES=$(get_cpu_cores_num)
+    echo "copy mxgate load data scripts to the primary segment"
+    for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
+      SEGMENT_HOST=$(echo $i | awk -F '|' '{print $2}')
+      PRIMARY_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
+      GEN_DATA_PATH=$PRIMARY_DATA_PATH/pivotalguru
+      echo "scp $PWD/mxgate_load.sh $ADMIN_USER@$SEGMENT_HOST:$PRIMARY_DATA_PATH/"
+      scp $PWD/mxgate_load.sh $ADMIN_USER@$SEGMENT_HOST:$PRIMARY_DATA_PATH/
+      if [ "$PGUSER" == "" ]; then
+        PGUSER=$ADMIN_USER
+      fi
+      if [ "$PGDATABASE" == "" ]; then
+        PGDATABASE=$PGUSER
+      fi
+      echo "***DATABASE_USER: $DATABASE_USER"
+      echo "ssh -n -f $SEGMENT_HOST \"bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'\""
+      ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'"
+	  status=$!
+	  echo "run mxgate status: $status"
+	  if [ "$status" != "" ]; then
+	  	exit 1
+	  fi  
+    done
+}
 
 copy_script()
 {
@@ -70,22 +113,45 @@ start_gpfdist()
 	fi
 }
 
-if [[ "$VERSION" == *"gpdb"* ]]; then
-	copy_script
-	start_gpfdist
-
-	for i in $(ls $PWD/*.$filter.*.sql); do
-		start_log
-
-		id=$(echo $i | awk -F '.' '{print $1}')
-		schema_name=$(echo $i | awk -F '.' '{print $2}')
-		table_name=$(echo $i | awk -F '.' '{print $3}')
-
-		echo "psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print \$3}'"
-		tuples=$(psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print $3}'; exit ${PIPESTATUS[0]})
-
-		log $tuples
+wait_mxgate_done()
+{
+	echo ""
+	echo "Now load data by mxgate, this may take a while."
+	echo -ne "Loading data "
+	tuples=$(($start_count + 1))
+	while [ "$tuples" -gt "$start_count" ]; do
+		echo -ne "."
+		sleep 5
+		tuples=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
 	done
+
+	echo ""
+	echo "Done loading data"
+	echo ""
+}
+
+if [[ "$VERSION" == *"gpdb"* ]]; then
+  if [[ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]]; then
+  	do_mxgate_import
+	start_count=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
+	wait_mxgate_done
+  else
+    copy_script
+    start_gpfdist
+    for i in $(ls $PWD/*.$filter.*.sql); do
+      start_log
+
+      id=$(echo $i | awk -F '.' '{print $1}')
+      schema_name=$(echo $i | awk -F '.' '{print $2}')
+      table_name=$(echo $i | awk -F '.' '{print $3}')
+
+      echo "psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print \$3}'"
+      tuples=$(psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print $3}'; exit ${PIPESTATUS[0]})
+
+      log $tuples
+	  stop_gpfdist
+    done
+  fi
 	if [[ $ADD_FOREIGN_KEY == "true" ]]; then
 	  	for i in $(ls $PWD/foreignkeys/*.$filter.*.sql); do
     		start_log
@@ -100,7 +166,6 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
     		log $tuples
     	done
   fi
-	stop_gpfdist
 else
 	if [ "$PGDATA" == "" ]; then
 		echo "ERROR: Unable to determine PGDATA environment variable.  Be sure to have this set for the admin user."
@@ -165,8 +230,12 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
 
 	start_log
 	#Analyze schema using analyzedb
-	analyzedb -d $dbname -s tpch --full -a
-
+	tables=(region nation customer supplier part partsupp orders lineitem)
+	for t in "${tables[@]}"
+	do
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan $schema_name.$t;"
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum $schema_name.$t;"
+  done
 	tuples="0"
 	log $tuples
 else

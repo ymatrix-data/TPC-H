@@ -1,9 +1,12 @@
 #!/bin/bash
 set -e
 
+GEN_DATA_SCALE=${1}
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
-PURE_SCRIPT_MODE=${17}
+DATABASE_TYPE=${20}
+LOAD_DATA_TYPE=${21}
+PURE_SCRIPT_MODE=${22}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -20,7 +23,11 @@ make_tpc()
 	#compile dbgen
 	cd $PWD/dbgen
 	rm -f *.o
-	make
+	if [[ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]]; then
+		make DB=matrixdb
+	else
+		make
+	fi
 	cd ..
 }
 copy_queries()
@@ -51,7 +58,7 @@ clean_tpc(){
 }
 
 if [ "$PURE_SCRIPT_MODE" == "" ]; then
-	make_tpc
+        make_tpc
 fi
 create_hosts_file
 copy_queries

@@ -9,6 +9,8 @@ session_id=$1
 EXPLAIN_ANALYZE=$2
 OPTIMIZER=$3
 CREATE_TBL=${5}
+SESSION_GUCS=${18}
+PREHEATING_DATA=${19}
 
 
 if [[ "$session_id" == "" || "$EXPLAIN_ANALYZE" == "" ]]; then
@@ -28,6 +30,8 @@ init_log $step
 sql_dir=$PWD/tpch/$session_id
 
 query_id=100
+
+get_version
 
 for order in $(seq 1 22); do
 	query_id=$((query_id+1))
@@ -65,13 +69,21 @@ for i in $(ls $sql_dir/*.sql); do
 
 	if [ "$EXPLAIN_ANALYZE" == "false" ]; then
 		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"\"  -v CREATE_TABLE=\"$create_tbl\" -v INSERT_TABLE=\"$insert_tbl\"  -f $i | wc -l"
-		tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
+		if [[ "$VERSION" == *"gpdb"* ]];then
+			tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i | wc -l; exit ${PIPESTATUS[0]})
+		else 
+			tuples=$(psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
+		fi
 		tuples=$(($tuples-1))
 	else
 		myfilename=$(basename $i)
 		mylogfile=$GEN_DATA_DIR/log/"$session_id"".""$myfilename"".multi.explain_analyze.log"
 		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE=\"EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, SUMMARY, FORMAT JSON)\" -v CREATE_TABLE=\"$create_tbl\" -v INSERT_TABLE=\"$insert_tbl\" -f $i"
-		PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, SUMMARY, FORMAT JSON)" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i > $mylogfile
+		if [[ "$VERSION" == *"gpdb"* ]];then
+			PGOPTIONS="-c optimizer=$OPTIMIZER -c enable_nestloop=off -c enable_mergejoin=off" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, SUMMARY, FORMAT JSON)" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i > $mylogfile
+		else
+			psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v ON_ERROR_STOP=ON -v EXPLAIN_ANALYZE="EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, SUMMARY, FORMAT JSON)" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i > $mylogfile 
+		fi
 		tuples="0"
 	fi
 		

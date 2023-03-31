@@ -14,11 +14,22 @@ SMALL_STORAGE=$7
 MEDIUM_STORAGE=$8
 LARGE_STORAGE=$9
 GEN_DATA_DIR=${12}
+DATABASE_TYPE=${20}
+
 
 if [[ "$GEN_DATA_SCALE" == "" || "$EXPLAIN_ANALYZE" == "" || "$RANDOM_DISTRIBUTION" == "" || "$MULTI_USER_COUNT" == "" || "$SINGLE_USER_ITERATIONS" == "" ]]; then
 	echo "You must provide the scale as a parameter in terms of Gigabytes, true/false to run queries with EXPLAIN ANALYZE option, true/false to use random distrbution, multi-user count, and the number of sql iterations."
 	echo "Example: ./rollout.sh 100 false false 5 1"
 	exit 1
+fi
+
+MARS2_ENCODING_MINMAX=""
+if [ "$DATABASE_TYPE" == "matrixdb" ]; then
+  if [[ "$GEN_DATA_SCALE" -lt "1000" ]]; then
+    MARS2_ENCODING_MINMAX="encoding(minmax)"
+  else
+    MARS2_ENCODING_MINMAX="encoding(minmax,compresstype=zstd,compresslevel=1)"
+  fi
 fi
 
 step=ddl
@@ -53,16 +64,16 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 			DISTRIBUTED_BY="DISTRIBUTED BY (""$distribution"")"
 		fi
 
-		if [[ "$SMALL_STORAGE" != "USING mars2" && "$MEDIUM_STORAGE" != "USING mars2" && "$LARGE_STORAGE" != "USING mars2" ]]; then
-		    CREATE_EXTENSION=""
+		if [[ "$SMALL_STORAGE" != *"mars2"* && "$MEDIUM_STORAGE" != *"mars2"* && "$LARGE_STORAGE" != *"mars2"* ]]; then
+		  CREATE_EXTENSION=""
 			CREATE_MARS2_BTREE_INDEX=""
 		else
-		    CREATE_EXTENSION="CREATE EXTENSION IF NOT EXISTS matrixts"
+		  CREATE_EXTENSION="CREATE EXTENSION IF NOT EXISTS matrixts"
 			CREATE_MARS2_BTREE_INDEX=""
 			for z in $(cat $PWD/mars2_btree_index.txt); do
 				table_name2=$(echo $z | awk -F '|' '{print $2}')
 				storage_size=$(echo $z | awk -F '|' '{print $3}')
-				if [[ "$table_name2" == "$table_name" && ${!storage_size} == "USING mars2" ]]; then
+				if [[ "$table_name2" == "$table_name" && ${!storage_size} = *"mars2"* ]]; then
 				    CREATE_MARS2_BTREE_INDEX="CREATE INDEX idx_$table_name ON tpch.$table_name USING mars2_btree($(echo $z | awk -F '|' '{print $4}')) $(echo $z | awk -F '|' '{print $5}')"
 				fi
 			done
@@ -74,7 +85,7 @@ for i in $(ls $PWD/*.$filter.*.sql); do
 	fi
 
 	echo "psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE=\"$SMALL_STORAGE\" -v MEDIUM_STORAGE=\"$MEDIUM_STORAGE\" -v LARGE_STORAGE=\"$LARGE_STORAGE\" -v DISTRIBUTED_BY=\"$DISTRIBUTED_BY\" -v CREATE_MARS2_BTREE_INDEX=\"$CREATE_MARS2_BTREE_INDEX\" -v CREATE_EXTENSION=\"$CREATE_EXTENSION\""
-	psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE="$SMALL_STORAGE" -v MEDIUM_STORAGE="$MEDIUM_STORAGE" -v LARGE_STORAGE="$LARGE_STORAGE" -v DISTRIBUTED_BY="$DISTRIBUTED_BY" -v CREATE_MARS2_BTREE_INDEX="$CREATE_MARS2_BTREE_INDEX" -v CREATE_EXTENSION="$CREATE_EXTENSION"
+	psql -v ON_ERROR_STOP=1 -q -a -P pager=off -f $i -v SMALL_STORAGE="$SMALL_STORAGE" -v MEDIUM_STORAGE="$MEDIUM_STORAGE" -v LARGE_STORAGE="$LARGE_STORAGE" -v DISTRIBUTED_BY="$DISTRIBUTED_BY" -v CREATE_MARS2_BTREE_INDEX="$CREATE_MARS2_BTREE_INDEX" -v CREATE_EXTENSION="$CREATE_EXTENSION" -v MARS2_ENCODING_MINMAX=$MARS2_ENCODING_MINMAX
 
 done
 

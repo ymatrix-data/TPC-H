@@ -42,7 +42,7 @@ gen_data()
 {
 	get_version
 	if [[ "$VERSION" == *"gpdb"* ]]; then
-		PARALLEL=$(gpstate | grep "Total primary segments" | awk -F '=' '{print $2}')
+		PARALLEL=$(psql -v ON_ERROR_STOP=1 -q -A -t -c "select count(*)from gp_segment_configuration g where g.content >= 0 and g.role = 'p'")
 		if [ "$PARALLEL" == "" ]; then
 			echo "ERROR: Unable to determine how many primary segments are in the cluster using gpstate."
 			exit 1

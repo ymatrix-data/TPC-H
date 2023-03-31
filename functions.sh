@@ -122,3 +122,26 @@ create_hosts_file()
 	fi
 }
 
+get_cpu_cores_num()
+{
+  cores=$(nproc)
+  cpu_cgroup_path=/sys/fs/cgroup/cpu
+  if [ -f ${cpu_cgroup_path}/cpu.cfs_quota_us ]  && [ -f ${cpu_cgroup_path}/cpu.cfs_period_us ] ; then
+    cfs_quota_us=$(cat ${cpu_cgroup_path}/cpu.cfs_quota_us)
+    cfs_period_us=$(cat ${cpu_cgroup_path}/cpu.cfs_period_us)
+    # judge whether inside a docker container, cpu cores is differ from physical machine
+    if [ $cfs_quota_us -ne -1 ] && [ $cfs_period_us -ne 0 ]; then
+       cores=`expr $cfs_quota_us / $cfs_period_us`
+    fi
+  fi
+  echo $cores
+}
+
+make_guc_effect() {
+	mx_provider=$(psql -v ON_ERROR_STOP=1 -t -A -c "show mx_ha_provider;")
+	if [[ "${mx_provider}" == "external" ]]; then
+		mxstop -u
+	else
+		gpstop -u
+	fi
+}
