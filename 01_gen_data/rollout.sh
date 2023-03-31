@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "############################################################################"
+echo "Generate data"
+echo "############################################################################"
+
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
 source_bashrc
@@ -134,3 +138,5 @@ $PWD/generate_queries.sh $CREATE_TABLE
 log
 
 end_step $step
+echo "############################################################################"
+echo ""

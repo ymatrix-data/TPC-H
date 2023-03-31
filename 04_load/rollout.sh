@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo "############################################################################"
+echo "Load data"
+echo "############################################################################"
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
 ADD_FOREIGN_KEY=${16}
@@ -231,7 +234,9 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
 	tables=(region nation customer supplier part partsupp orders lineitem)
 	for t in "${tables[@]}"
 	do
+	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"analyze fullscan $schema_name.$t;\""
     psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan $schema_name.$t;"
+	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"vacuum $schema_name.$t;\""
     psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum $schema_name.$t;"
   done
 	tuples="0"
@@ -251,3 +256,6 @@ else
 fi
 
 end_step $step
+
+echo "############################################################################"
+echo ""

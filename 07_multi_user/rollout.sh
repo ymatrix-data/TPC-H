@@ -2,6 +2,10 @@
 
 set -e
 
+echo "############################################################################"
+echo "Run TPC-H queries for multi user"
+echo "############################################################################"
+
 GEN_DATA_SCALE=$1
 EXPLAIN_ANALYZE=$2
 RANDOM_DISTRIBUTION=$3
@@ -88,3 +92,5 @@ if [ "$file_count" -ne "$MULTI_USER_COUNT" ]; then
 		exit 1
 	fi
 fi
+echo "############################################################################"
+echo ""

@@ -145,3 +145,41 @@ make_guc_effect() {
 		gpstop -u
 	fi
 }
+
+function round_up() {
+    bc << EOF
+    num = $1;
+    base = num / 1;
+    if (((num - base) * 10) > 1 )
+        base += 1;
+    print base;
+EOF
+}
+
+function set_gucs(){
+	echo "############################################################################"
+	echo "Set specific gucs"
+	echo "############################################################################"
+	# Get the number of CPU cores
+	cores=$(get_cpu_cores_num)
+	
+	# Query the number of segments in the database
+	segnum=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from gp_segment_configuration WHERE role = 'p' AND content >= 0;")
+
+	# Calculate the number of parallel workers to use
+	parallel_workers_float=$(echo "scale=2; $cores/2.0/$segnum" | bc)
+	parallel_workers=$(round_up $parallel_workers_float)
+
+  	gpconfig -c gp_interconnect_type -v tcp
+  	gpconfig -c enable_indexscan -v off
+  	gpconfig -c enable_mergejoin -v off
+  	gpconfig -c enable_nestloop -v off
+  	gpconfig -c enable_parallel_hash -v off
+  	gpconfig -c gp_enable_hashjoin_size_heuristic -v on --skipvalidation
+  	gpconfig -c gp_cached_segworkers_threshold -v 50
+  	gpconfig -c max_parallel_workers_per_gather -v $parallel_workers
+	
+  	make_guc_effect
+	echo "############################################################################"
+	echo ""
+}
