@@ -27,7 +27,7 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       pid=$!
       #echo "mxgate pid is $pid"
       if [ "$pid" -ne "0" ]; then
-	      sleep 1
+	      sleep .1
 	      count=$(ps -ef 2> /dev/null | grep -v grep | awk -F ' ' '{print $2}' | grep $pid | wc -l)
 	      if [ "$count" -eq "0" ]; then
           echo "fail to start mxgate"
