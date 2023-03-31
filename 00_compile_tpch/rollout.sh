@@ -5,7 +5,7 @@ GEN_DATA_SCALE=${1}
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
 DATABASE_TYPE=${20}
-PURE_SCRIPT_MODE=${21}
+PURE_SCRIPT_MODE=${22}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh

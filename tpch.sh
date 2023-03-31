@@ -250,6 +250,17 @@ check_variables()
 		fi
     	new_variable=$(($new_variable + 1))
   	fi
+	#19
+  	local count=$(grep "LOAD_DATA_TYPE=" $MYVAR | wc -l)
+  	if [ "$count" -eq "0" ]; then
+	  echo "# The type of load data into database, for matrixdb, mxgate or gpfdist are supported" >> $MYVAR
+	  if [ -n "$LOAD_DATA_TYPE" ]; then
+	  	echo "LOAD_DATA_TYPE=\"$LOAD_DATA_TYPE\"" >> $MYVAR
+	  else
+	  	echo "LOAD_DATA_TYPE=\"mxgate\"" >> $MYVAR
+	  fi
+		new_variable=$(($new_variable + 1))
+	fi
 }
 
 request_user_check_variables()
@@ -524,7 +535,7 @@ function print_notice() {
 		printf "**********************************NOTICE**********************************\n"
 		printf "	Below environment variables for are need to be exported:\n"
 		printf "		 \"PGPORT\"  \"PGDATABASE\"  \n"
-		printf "	Extra environment variables for Postgre to be exported:\n"
+		printf "	Extra environment variables for PostgreSQL to be exported:\n"
 		printf "                     \"PGDATA\" \n"
 		printf "**************************************************************************\n"
 		exit 1
@@ -581,5 +592,5 @@ if [ "$DATABASE_TYPE" == "matrixdb" ]; then
   fi
 fi
 
-cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $CREATE_TBL $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY $TPCH_RUN_ID "$TPCH_SESSION_GUCS" $PREHEATING_DATA $DATABASE_TYPE $PURE_SCRIPT_MODE
+cd $INSTALL_DIR; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCH $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $SINGLE_USER_ITERATIONS $GREENPLUM_PATH "$SMALL_STORAGE" "$MEDIUM_STORAGE" "$LARGE_STORAGE" $CREATE_TBL $OPTIMIZER $GEN_DATA_DIR $EXT_HOST_DATA_DIR $ADD_FOREIGN_KEY $TPCH_RUN_ID "$TPCH_SESSION_GUCS" $PREHEATING_DATA $DATABASE_TYPE $LOAD_DATA_TYPE $PURE_SCRIPT_MODE
 

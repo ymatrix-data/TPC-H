@@ -5,6 +5,7 @@ GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
 ADD_FOREIGN_KEY=${16}
 DATABASE_TYPE=${20}
+LOAD_DATA_TYPE=${21}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $PWD/../functions.sh
@@ -125,8 +126,8 @@ wait_mxgate_done()
 }
 
 if [[ "$VERSION" == *"gpdb"* ]]; then
-  if [ "$DATABASE_TYPE" == "matrixdb" ]; then
-    do_mxgate_import
+  if [ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]; then
+  	do_mxgate_import
 	start_count=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
 	wait_mxgate_done
   else

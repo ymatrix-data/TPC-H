@@ -22,5 +22,23 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --delimiter "|" \
       --target tpch.$table_name \
       --stream-prepared 2 \
-      --parallel $CORES < $GEN_DATA_PATH/$f
+      --parallel $CORES < $GEN_DATA_PATH/$f > mxgate.$f.log 2>&1 &
+
+      pid=$!
+      echo $pid
+      if [ "$pid" -ne "0" ]; then
+	      sleep .4
+	      count=$(ps -ef 2> /dev/null | grep -v grep | awk -F ' ' '{print $2}' | grep $pid | wc -l)
+	      if [ "$count" -eq "1" ]; then
+		      echo "Started mxgate successfully"
+	      else
+		      echo "Fail to start mxagte"
+		      exit 1
+	      fi
+      else
+	      echo "Unable to start background process for mxgate"
+	      exit 1
+      fi
     done
+
+
