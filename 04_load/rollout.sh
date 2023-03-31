@@ -63,7 +63,7 @@ function do_mxgate_import()
       ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'"
 	  status=$!
 	  echo "run mxgate status: $status"
-	  if [ "$status" != "0" ]; then
+	  if [ "$status" != "" ]; then
 	  	exit 1
 	  fi  
     done
@@ -149,6 +149,7 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
       tuples=$(psql -v ON_ERROR_STOP=1 -f $i | grep INSERT | awk -F ' ' '{print $3}'; exit ${PIPESTATUS[0]})
 
       log $tuples
+	  stop_gpfdist
     done
   fi
 	if [[ $ADD_FOREIGN_KEY == "true" ]]; then
@@ -165,7 +166,6 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
     		log $tuples
     	done
   fi
-	stop_gpfdist
 else
 	if [ "$PGDATA" == "" ]; then
 		echo "ERROR: Unable to determine PGDATA environment variable.  Be sure to have this set for the admin user."

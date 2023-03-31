@@ -5,6 +5,7 @@ GEN_DATA_SCALE=${1}
 GEN_DATA_DIR=${12}
 EXT_HOST_DATA_DIR=${13}
 DATABASE_TYPE=${20}
+LOAD_DATA_TYPE=${21}
 PURE_SCRIPT_MODE=${22}
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -22,7 +23,7 @@ make_tpc()
 	#compile dbgen
 	cd $PWD/dbgen
 	rm -f *.o
-	if [[ "$DATABASE_TYPE" == "matrixdb" ]]; then
+	if [[ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]]; then
 		make DB=matrixdb
 	else
 		make
