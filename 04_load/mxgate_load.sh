@@ -21,11 +21,11 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --time-format raw \
       --delimiter "|" \
       --target tpch.$table_name \
-      --stream-prepared 2 \
+      --stream-prepared 0 \
       --parallel $CORES < $GEN_DATA_PATH/$f > $GEN_DATA_PATH/mxgate.$table_name.log 2>&1 &
 
       pid=$!
-      #echo "mxgate pid is $pid"
+      echo "mxgate pid is $pid"
       if [ "$pid" -ne "0" ]; then
         sleep .1
         count=$(ps -ef 2> /dev/null | grep -v grep | awk -F ' ' '{print $2}' | grep $pid | wc -l)
