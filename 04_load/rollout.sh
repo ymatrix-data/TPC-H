@@ -133,8 +133,8 @@ wait_mxgate_done()
 
 if [[ "$VERSION" == *"gpdb"* ]]; then
   if [[ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]]; then
-  	do_mxgate_import
 	start_count=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
+  	do_mxgate_import
 	wait_mxgate_done
   else
     copy_script

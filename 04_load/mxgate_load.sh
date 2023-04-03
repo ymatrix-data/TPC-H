@@ -22,7 +22,7 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --delimiter "|" \
       --target tpch.$table_name \
       --stream-prepared 2 \
-      --parallel $CORES < $GEN_DATA_PATH/$f > $GEN_DATA_PATH/mxgate.$f.log 2>&1 &
+      --parallel $CORES < $GEN_DATA_PATH/$f > $GEN_DATA_PATH/mxgate.$table_name.log 2>&1 &
 
       pid=$!
       #echo "mxgate pid is $pid"
@@ -42,7 +42,7 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
 logs=$(ls $GEN_DATA_PATH | grep "mxgate.*.log")
 for log in $logs
   do
-    error=$(grep -rn "ERROR" $GEN_DATA_PATH/$log | wc -l)
+    error=$(grep -rn "Failed" $GEN_DATA_PATH/$log | awk '{print $5}')
     if [ "$error" -ne "0" ]; then
       echo "found errors in mxgate log, for more details, please refer to $GEN_DATA_PATH/$log "
       exit 1
