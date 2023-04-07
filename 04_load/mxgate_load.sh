@@ -11,6 +11,7 @@ MASTER_USER=$6
 for f in `ls $GEN_DATA_PATH | grep tbl`
     do
       table_name=$(echo $f | awk -F '.' '{print $1}')
+      echo "execute mxgate data loading for table: $table_name, data path is: $GEN_DATA_PATH"
       mxgate \
       --source stdin \
       --format csv \

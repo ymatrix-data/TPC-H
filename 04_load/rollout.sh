@@ -62,7 +62,7 @@ function do_mxgate_import()
       if [ "$PGDATABASE" == "" ]; then
         PGDATABASE=$PGUSER
       fi
-	  echo "ssh -n -f $SEGMENT_HOST \"bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_load.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'\""
+	  echo "ssh -n -f $SEGMENT_HOST \"bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_run.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'\""
 	  status=$(ssh -n -f $SEGMENT_HOST "bash -c 'source $GREENPLUM_PATH; cd $PRIMARY_DATA_PATH/; ./mxgate_run.sh $PGDATABASE $MASTER_HOST $MASTER_PORT $GEN_DATA_PATH $CORES $PGUSER'")
 	  if [ "$status" != "" ]; then
 	  	echo "ERROR: Loading data by mxgate failed : [$status]"
