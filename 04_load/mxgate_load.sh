@@ -11,7 +11,7 @@ MASTER_USER=$6
 for f in `ls $GEN_DATA_PATH | grep tbl`
     do
       table_name=$(echo $f | awk -F '.' '{print $1}')
-      mxgated \
+      mxgate \
       --source stdin \
       --format csv \
       --db-database $DATABASE \
@@ -22,29 +22,5 @@ for f in `ls $GEN_DATA_PATH | grep tbl`
       --delimiter "|" \
       --target tpch.$table_name \
       --stream-prepared 0 \
-      --parallel $CORES < $GEN_DATA_PATH/$f > $GEN_DATA_PATH/mxgate.$table_name.log 2>&1 &
-
-      pid=$!
-      echo "mxgate pid is $pid"
-      if [ "$pid" -ne "0" ]; then
-        sleep .1
-        count=$(ps -ef 2> /dev/null | grep -v grep | awk -F ' ' '{print $2}' | grep $pid | wc -l)
-        if [ "$count" -eq "0" ]; then
-          echo "fail to start mxgate"
-          exit 1
-        fi
-      else
-        echo "unable to start background process for mxgate"
-        exit 1
-      fi
+      --parallel $CORES < $GEN_DATA_PATH/$f > $GEN_DATA_PATH/mxgate.$table_name.log
     done
-
-logs=$(ls $GEN_DATA_PATH | grep "mxgate.*.log")
-for log in $logs
-  do
-    error=$(grep -rn "Failed" $GEN_DATA_PATH/$log | awk '{print $5}')
-    if [ "$error" -ne "0" ]; then
-      echo "found errors in mxgate log, for more details, please refer to $GEN_DATA_PATH/$log "
-      exit 1
-    fi
-  done
