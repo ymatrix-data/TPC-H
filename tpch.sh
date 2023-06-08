@@ -17,7 +17,7 @@ new_variable="0"
 check_variables()
 {
 	if [ "$GEN_DATA_SCALE" == "" ]; then
-		storage="USING mars3"
+		storage="USING mars3 with (compresstype=lz4, compresslevel=1)"
 	fi
 	### Make sure variables file is available
 	if [ ! -f "$PWD/$MYVAR" ]; then
@@ -158,7 +158,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For region/nation, eg: USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "SMALL_STORAGE=\"using mars3\"" >> $MYVAR
+			echo "SMALL_STORAGE=\"using mars3 with (compresstype=lz4, compresslevel=1)\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "SMALL_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
@@ -171,7 +171,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "MEDIUM_STORAGE=\"using mars3\"" >> $MYVAR
+			echo "MEDIUM_STORAGE=\"using mars3 with (compresstype=lz4, compresslevel=1)\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "MEDIUM_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
@@ -184,7 +184,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "LARGE_STORAGE=\"using mars3\"" >> $MYVAR
+			echo "LARGE_STORAGE=\"using mars3 with (compresstype=lz4, compresslevel=1)\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "LARGE_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
