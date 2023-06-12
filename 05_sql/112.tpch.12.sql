@@ -11,8 +11,8 @@ select
 			or o_orderpriority = '2-HIGH'
 			then 1
 		else 0
-	end) as high_line_count,
-	sum(case
+	end)) as high_line_count,
+	round(sum(case
 		when o_orderpriority <> '1-URGENT'
 			and o_orderpriority <> '2-HIGH'
 			then 1
