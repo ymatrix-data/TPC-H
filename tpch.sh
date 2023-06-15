@@ -8,6 +8,7 @@ source $PWD/functions.sh
 
 MYCMD="tpch.sh"
 MYVAR="tpch_variables.sh"
+ACCESS_METHOD="mars2"
 new_variable="0"
 
 ##################################################################################################################################################
@@ -19,6 +20,29 @@ check_variables()
 	if [ "$GEN_DATA_SCALE" == "" ]; then
 		storage="USING mars3 with (compresstype=lz4, compresslevel=1)"
 	fi
+
+	case $ACCESS_METHOD in
+    "heap")
+      storage=""
+      ;;
+    "aoco")
+      if [[ "$GEN_DATA_SCALE" -lt "1000" ]]; then
+        storage="with(appendonly=true, orientation=column)"
+      else
+        storage="with(appendonly=true, orientation=column, compresstype=1z4)"
+      fi
+      ;;
+    "mars2")
+      if [[ "$GEN_DATA_SCALE" -lt "1000" ]]; then
+        storage="USING mars2 WITH (compress_threshold=12000)"
+      else
+        storage="USING mars2 WITH (compress_threshold=12000,compresstype=zstd,compresslevel=1)"
+      fi
+      ;;
+    "mars3")
+      storage="USING mars3 with (compresstype=lz4, compresslevel=1)"
+      ;;
+  esac
 	### Make sure variables file is available
 	if [ ! -f "$PWD/$MYVAR" ]; then
 		touch $PWD/$MYVAR
@@ -158,7 +182,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For region/nation, eg: USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "SMALL_STORAGE=\"using mars3 with (compresstype=lz4, compresslevel=1)\"" >> $MYVAR
+		  echo "SMALL_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "SMALL_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
@@ -171,7 +195,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "MEDIUM_STORAGE=\"using mars3 with (compresstype=lz4, compresslevel=1)\"" >> $MYVAR
+		  echo "MEDIUM_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "MEDIUM_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
@@ -184,7 +208,7 @@ check_variables()
 	if [ "$count" -eq "0" ]; then
 		echo "# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
-			echo "LARGE_STORAGE=\"using mars3 with (compresstype=lz4, compresslevel=1)\"" >> $MYVAR
+		  echo "LARGE_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
 			echo "LARGE_STORAGE=\"with(appendonly=true, orientation=column)\"" >> $MYVAR
 		else
@@ -468,6 +492,7 @@ Args:
    -s [scale] 
       Required, scale of the generated dataset in gigabytes, and specify this option to run benchmark against a desired dataset with specified scale.
 
+   -a [access method]
 Usage:
     
     Run TPC-H against matrixdb with scale 100
@@ -484,10 +509,11 @@ EOF
 function parse_args()
 {
     OPTIND=1
-    while getopts ":d:s:h" opt; do
+    while getopts ":d:s:a:h" opt; do
     case "$opt" in
         s) GEN_DATA_SCALE="$OPTARG";;
         d) DATABASE_TYPE="$OPTARG";;
+        a) ACCESS_METHOD="$OPTARG";;
         h) 
         show_help
         exit 0
@@ -504,13 +530,31 @@ function parse_args()
     done
     shift "$((OPTIND - 1))"
 
-	# Check if database_type is valid
-	DATABASE_TYPE=$(echo $DATABASE_TYPE | tr [A-Z] [a-z]) 
-    if [[ "${DATABASE_TYPE}" != "matrixdb" && "${DATABASE_TYPE}" != "greenplum" && "${DATABASE_TYPE}" != "postgresql" ]]; then
-		printf "%s\n" "Invalid database: \"$DATABASE_TYPE\", supported databases are matrixdb, greenplum, postgresql." >&2
-		printf "Execute \"./tpch.sh -h\" to show help messages.\n"
-		exit 1
-    fi
+  DATABASE_TYPE=$(echo $DATABASE_TYPE | tr [A-Z] [a-z])
+  ACCESS_METHOD=$(echo $ACCESS_METHOD | tr [A-Z] [a-z])
+
+	# Check if database_type and access method is valid
+  case ${DATABASE_TYPE} in
+    "matrixdb")
+        case ${ACCESS_METHOD} in
+          "heap" | "aoco" | "mars2" | "mars3") ;;
+          *)
+            printf "%s\n" "Invalid access method : \"$ACCESS_METHOD\", supported access_method are heap, aoco, mars2, mars3." >&2
+            printf "Execute \"./tpch.sh -h\" to show help messages.\n"
+            exit 1
+            ;;
+        esac
+        ;;
+     "greenplum")
+        ;;
+     "postgresql")
+        ;;
+      *)
+        printf "%s\n" "Invalid database: \"$DATABASE_TYPE\", supported databases are matrixdb, greenplum, postgresql." >&2
+        printf "Execute \"./tpch.sh -h\" to show help messages.\n"
+        exit 1
+        ;;
+  esac
 }
 
 function print_notice() {
@@ -565,7 +609,7 @@ if [ "$PREHEATING_DATA" == "true" ]; then
     SINGLE_USER_ITERATIONS=`expr $SINGLE_USER_ITERATIONS + 1`
 fi
 if [ "$TPCH_RUN_ID" == "" ]; then
-    TPCH_RUN_ID=$(date "+%Y-%m-%d-%H-%M-%S")
+    TPCH_RUN_ID=$(date "+%Y%m%d%H%M%S")
 fi
 
 
