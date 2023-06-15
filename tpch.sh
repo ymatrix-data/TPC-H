@@ -17,10 +17,6 @@ new_variable="0"
 
 check_variables()
 {
-	if [ "$GEN_DATA_SCALE" == "" ]; then
-		storage="USING mars3 with (compresstype=lz4, compresslevel=1)"
-	fi
-
 	case $ACCESS_METHOD in
     "heap")
       storage=""
