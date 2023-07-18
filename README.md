@@ -23,7 +23,7 @@ brew install coreutils
     ```
 2. Generate configuration file `tpch_variables.sh`  
     ```
-    ./tpch.sh -d matrixdb -s 100
+    ./tpch.sh -d matrixdb -s 100 -a mars3
     ```
     Args:
     ```
@@ -31,6 +31,8 @@ brew install coreutils
         The database which TPC-H benchmark against, supported databases are matrixdb, greenplum, postgresql.
     -s [DATA_SCALE]
         The scale of the generated dataset in gigabytes, and specify this option to run benchmark against a desired dataset with specified scale, such as 1GB, 100GB, 1000GB.
+    -a [ACCESS_METHOD]
+        The access method of matrixdb, supported access method are mars2, mars3, aoco.
     -h
         Show help messages.
     ```
