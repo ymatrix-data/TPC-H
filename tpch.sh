@@ -8,7 +8,7 @@ source $PWD/functions.sh
 
 MYCMD="tpch.sh"
 MYVAR="tpch_variables.sh"
-ACCESS_METHOD="mars2"
+ACCESS_METHOD="mars3"
 new_variable="0"
 
 ##################################################################################################################################################
@@ -176,7 +176,7 @@ check_variables()
 	#10
 	local count=$(grep "SMALL_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "# For region/nation, eg: USING mars2. Empty means heap" >> $MYVAR
+		echo "# For region/nation, eg: USING mars2, USING mars3 with (compresstype=lz4, compresslevel=1). Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
 		  echo "SMALL_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
@@ -189,7 +189,7 @@ check_variables()
 	#11
 	local count=$(grep "MEDIUM_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2. Empty means heap" >> $MYVAR
+		echo "# For customer/part/partsupp/supplier, eg: with(appendonly=true, orientation=column), USING mars2, USING mars3 with (compresstype=lz4, compresslevel=1). Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
 		  echo "MEDIUM_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
@@ -202,7 +202,7 @@ check_variables()
 	#12
 	local count=$(grep "LARGE_STORAGE" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2. Empty means heap" >> $MYVAR
+		echo "# For lineitem, orders, eg: with(appendonly=true, orientation=column, compresstype=1z4), USING mars2, USING mars3 with (compresstype=lz4, compresslevel=1) . Empty means heap" >> $MYVAR
 		if [[ "${DATABASE_TYPE}" == "matrixdb" ]]; then
 		  echo "LARGE_STORAGE=\"$storage\"" >> $MYVAR
 		elif [[ "${DATABASE_TYPE}" == "greenplum"  ]]; then
@@ -489,6 +489,7 @@ Args:
       Required, scale of the generated dataset in gigabytes, and specify this option to run benchmark against a desired dataset with specified scale.
 
    -a [access method]
+      Optioned, the access method of MatrixDB defaults to mars3, with support for mars2, mars3, and aoco.
 Usage:
     
     Run TPC-H against matrixdb with scale 100
