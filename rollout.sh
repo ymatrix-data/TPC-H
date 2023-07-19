@@ -103,12 +103,14 @@ echo "##########################################################################
 echo ""
 
 if [ "$DATABASE_TYPE" == "matrixdb" ]; then
-		set_gucs
-		if [ "$GEN_DATA_SCALE" -lt "1000" ]; then
-			TPCH_SESSION_GUCS="set statement_mem to '1GB';"
-		else
-			TPCH_SESSION_GUCS="set statement_mem to '2GB';"
-		fi
+    if [[ "$TPCH_SESSION_GUCS" == "" ]]; then
+      set_gucs
+      if [ "$GEN_DATA_SCALE" -lt "1000" ]; then
+        TPCH_SESSION_GUCS="set statement_mem to '1GB';"
+      else
+        TPCH_SESSION_GUCS="set statement_mem to '2GB';"
+      fi
+    fi
 fi
 
 for i in $(ls -d $PWD/0*); do
