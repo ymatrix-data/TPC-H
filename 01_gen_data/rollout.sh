@@ -94,13 +94,18 @@ gen_data()
 get_count_generate_data()
 {
 	count="0"
+	get_arch=`arch`
 	for i in $(cat $PWD/../segment_hosts.txt); do
 		next_count=$(ssh -o ConnectTimeout=0 -n -f $i "bash -c 'ps -ef | grep generate_data.sh | grep -v grep | wc -l'" 2>&1 || true)
 		echo $OSTYPE
 		if [[ "$OSTYPE" == "darwin"* ]]; then
 		  check="[0-9]+$"
 		else
-		  check="^[0-9]+$"
+		  if [[ $get_arch =~ "aarch64" ]];then
+		    check="[0-9]+$"
+		  else
+		    check="^[0-9]+$"
+		  fi
 		fi
 		echo $check
 		echo $next_count
