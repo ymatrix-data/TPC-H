@@ -31,6 +31,7 @@ if [ "$PARALLEL" -eq "1" ]; then
 fi
 
 cd $PWD
+echo "$PWD/dbgen -s $GEN_DATA_SCALE -C $PARALLEL -S $CHILD -v"
 $PWD/dbgen -s $GEN_DATA_SCALE -C $PARALLEL -S $CHILD -v
 if [ "$CHILD" -gt "1" ]; then
 	rm -f $DATA_DIRECTORY/nation.tbl
