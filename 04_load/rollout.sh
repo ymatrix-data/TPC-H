@@ -237,8 +237,8 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
 	do
 	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"analyze fullscan $schema_name.$t;\""
     psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan $schema_name.$t;"
-	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"vacuum $schema_name.$t;\""
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum $schema_name.$t;"
+	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"vacuum full ${schema_name}.${t};vacuum ${schema_name}.${t};\""
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum full ${schema_name}.${t};vacuum ${schema_name}.${t};"
   done
 	tuples="0"
 	log $tuples
