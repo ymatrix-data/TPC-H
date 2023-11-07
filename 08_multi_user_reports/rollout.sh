@@ -39,7 +39,7 @@ for i in $(ls $GEN_DATA_DIR/log/rollout_testing_*); do
         psql -v ON_ERROR_STOP=1 -X -a -f $filename -v LOGFILE="$logfile"
 done
 
-psql -v ON_ERROR_STOP=1 -t -A -X -c "select 'analyze ' || n.nspname || '.' || c.relname || ';' from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'tpch_testing'" | psql -v ON_ERROR_STOP=1 -t -X -A -e 
+psql -v ON_ERROR_STOP=1 -t -A -X -c "select 'analyze ' || n.nspname || '.' || c.relname || ';' from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'tpch_testing'" | psql -v ON_ERROR_STOP=1 -t -X -A -e
 
 psql -v ON_ERROR_STOP=1 -F $'\t' -A -P pager=off -f $PWD/detailed_report.sql
 echo ""
