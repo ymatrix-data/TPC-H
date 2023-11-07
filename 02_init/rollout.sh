@@ -30,7 +30,7 @@ check_gucs()
 	update_config="0"
 
 	if [ "$VERSION" == "gpdb_5" ]; then
-		counter=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "show optimizer_join_arity_for_associativity_commutativity" | grep -i "18" | wc -l; exit ${PIPESTATUS[0]})
+		counter=$(psql -v ON_ERROR_STOP=1 -q -AXtc "show optimizer_join_arity_for_associativity_commutativity" | grep -i "18" | wc -l; exit ${PIPESTATUS[0]})
 		if [ "$counter" -eq "0" ]; then
 			echo "setting optimizer_join_arity_for_associativity_commutativity"
 			gpconfig -c optimizer_join_arity_for_associativity_commutativity -v 18 --skipvalidation
@@ -39,7 +39,7 @@ check_gucs()
 	fi
 
 	echo "check analyze_root_partition"
-	counter=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "show optimizer_analyze_root_partition" | grep -i "on" | wc -l; exit ${PIPESTATUS[0]})
+	counter=$(psql -v ON_ERROR_STOP=1 -q -AXtc "show optimizer_analyze_root_partition" | grep -i "on" | wc -l; exit ${PIPESTATUS[0]})
 	if [ "$counter" -eq "0" ]; then
 		echo "enabling analyze_root_partition"
 		gpconfig -c optimizer_analyze_root_partition -v on --masteronly
@@ -47,7 +47,7 @@ check_gucs()
 	fi
 
 	echo "check gp_autostats_mode"
-	counter=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "show gp_autostats_mode" | grep -i "none" | wc -l; exit ${PIPESTATUS[0]})
+	counter=$(psql -v ON_ERROR_STOP=1 -q -AXtc "show gp_autostats_mode" | grep -i "none" | wc -l; exit ${PIPESTATUS[0]})
 	if [ "$counter" -eq "0" ]; then
 		echo "changing gp_autostats_mode to none"
 		gpconfig -c gp_autostats_mode -v none --masteronly
@@ -55,7 +55,7 @@ check_gucs()
 	fi
 
 	echo "check default_statistics_target"
-	counter=$(psql -v ON_ERROR_STOP=1 -q -t -A -c "show default_statistics_target" | grep "100" | wc -l; exit ${PIPESTATUS[0]})
+	counter=$(psql -v ON_ERROR_STOP=1 -q -AXtc "show default_statistics_target" | grep "100" | wc -l; exit ${PIPESTATUS[0]})
 	if [ "$counter" -eq "0" ]; then
 		echo "changing default_statistics_target to 100"
 		gpconfig -c default_statistics_target -v 100

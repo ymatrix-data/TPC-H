@@ -53,7 +53,7 @@ if [ "$RUN_SQL" == "true" ]; then
         if [[ "$VERSION" == *"gpdb"* ]];then
           tuples=$(PGOPTIONS="-c optimizer=$OPTIMIZER" psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -c "${SESSION_GUCS}"  -f $i | wc -l; exit ${PIPESTATUS[0]})
         else 
-          tuples=$(psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
+          tuples=$(psql -v ON_ERROR_STOP=1 -q -AXtc -P pager=off -v EXPLAIN_ANALYZE="" -v CREATE_TABLE="$create_tbl" -v INSERT_TABLE="$insert_tbl" -f $i | wc -l; exit ${PIPESTATUS[0]})
         fi
       else
         myfilename=$(basename $i)
