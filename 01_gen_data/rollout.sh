@@ -46,14 +46,14 @@ gen_data()
 {
 	get_version
 	if [[ "$VERSION" == *"gpdb"* ]]; then
-		PARALLEL=$(psql -v ON_ERROR_STOP=1 -q -A -t -c "select count(*)from gp_segment_configuration g where g.content >= 0 and g.role = 'p'")
+		PARALLEL=$(psql -v ON_ERROR_STOP=1 -q -AXtc "select count(*)from gp_segment_configuration g where g.content >= 0 and g.role = 'p'")
 		if [ "$PARALLEL" == "" ]; then
 			echo "ERROR: Unable to determine how many primary segments are in the cluster using gpstate."
 			exit 1
 		fi
 		echo "parallel: $PARALLEL"
 		if [ "$VERSION" == "gpdb_6" -o "$VERSION" == "gpdb_7" ]; then
-			for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select row_number() over(), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by 1, 2, 3"); do
+			for i in $(psql -v ON_ERROR_STOP=1 -q -AXtc "select row_number() over(), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by 1, 2, 3"); do
 				CHILD=$(echo $i | awk -F '|' '{print $1}')
 				EXT_HOST=$(echo $i | awk -F '|' '{print $2}')
 				GEN_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
@@ -62,7 +62,7 @@ gen_data()
 				ssh -n -f $EXT_HOST "bash -c 'cd $EXT_HOST_DATA_DIR/; ./generate_data.sh $GEN_DATA_SCALE $CHILD $PARALLEL $GEN_DATA_PATH > generate_data.$CHILD.log 2>&1 < generate_data.$CHILD.log &'"
 			done
 		else
-			for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select row_number() over(), g.hostname, p.fselocation as path from gp_segment_configuration g join pg_filespace_entry p on g.dbid = p.fsedbid join pg_tablespace t on t.spcfsoid = p.fsefsoid where g.content >= 0 and g.role = 'p' and t.spcname = 'pg_default' order by 1, 2, 3"); do
+			for i in $(psql -v ON_ERROR_STOP=1 -q -AXtc "select row_number() over(), g.hostname, p.fselocation as path from gp_segment_configuration g join pg_filespace_entry p on g.dbid = p.fsedbid join pg_tablespace t on t.spcfsoid = p.fsefsoid where g.content >= 0 and g.role = 'p' and t.spcname = 'pg_default' order by 1, 2, 3"); do
 				CHILD=$(echo $i | awk -F '|' '{print $1}')
 				EXT_HOST=$(echo $i | awk -F '|' '{print $2}')
 				GEN_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')

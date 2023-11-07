@@ -22,7 +22,7 @@ MASTER_HOST=$(hostname | awk -F '.' '{print $1}')
 get_version()
 {
 	#need to call source_bashrc first
-	VERSION=$(psql -v ON_ERROR_STOP=1 -t -A -c "SELECT CASE WHEN POSITION ('Greenplum Database 4.3' IN version) > 0 THEN 'gpdb_4_3' WHEN POSITION ('Greenplum Database 5' IN version) > 0 THEN 'gpdb_5' WHEN POSITION ('Greenplum Database 6' IN version) > 0 THEN 'gpdb_6' WHEN POSITION ('Greenplum Database 7' IN version) > 0 THEN 'gpdb_7' ELSE 'postgresql' END FROM version();") 
+	VERSION=$(psql -v ON_ERROR_STOP=1 -AXtc "SELECT CASE WHEN POSITION ('Greenplum Database 4.3' IN version) > 0 THEN 'gpdb_4_3' WHEN POSITION ('Greenplum Database 5' IN version) > 0 THEN 'gpdb_5' WHEN POSITION ('Greenplum Database 6' IN version) > 0 THEN 'gpdb_6' WHEN POSITION ('Greenplum Database 7' IN version) > 0 THEN 'gpdb_7' ELSE 'postgresql' END FROM version();") 
 }
 source_bashrc()
 {
@@ -138,7 +138,7 @@ get_cpu_cores_num()
 }
 
 make_guc_effect() {
-	mx_provider=$(psql -v ON_ERROR_STOP=1 -t -A -c "show mx_ha_provider;")
+	mx_provider=$(psql -v ON_ERROR_STOP=1 -AXtc "show mx_ha_provider;")
 	if [[ "${mx_provider}" == "external" ]]; then
 		mxstop -u
 	else
@@ -164,7 +164,7 @@ function set_gucs(){
 	cores=$(get_cpu_cores_num)
 	
 	# Query the number of segments in the database
-	segnum=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from gp_segment_configuration WHERE role = 'p' AND content >= 0;")
+	segnum=$(psql -v ON_ERROR_STOP=1 -AXtc "select count(*) from gp_segment_configuration WHERE role = 'p' AND content >= 0;")
 
 	# Calculate the number of parallel workers to use
 	parallel_workers_float=$(echo "scale=2; $cores/2.0/$segnum" | bc)

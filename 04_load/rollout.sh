@@ -37,7 +37,7 @@ fi
 
 function do_mxgate_import()
 {
-    MASTER_HOST=$(psql -v ON_ERROR_STOP=1 -t -A -c "SELECT DISTINCT hostname FROM gp_segment_configuration WHERE role = 'p' AND content = -1")
+    MASTER_HOST=$(psql -v ON_ERROR_STOP=1 -AXtc "SELECT DISTINCT hostname FROM gp_segment_configuration WHERE role = 'p' AND content = -1")
     if [ "$MASTER_HOST" == "" ];then
           echo "ERROR: Unable to get matrixdb master host."
           exit 1
@@ -49,7 +49,7 @@ function do_mxgate_import()
     fi
     CORES=$(get_cpu_cores_num)
     echo "copy mxgate load data scripts to the primary segment"
-    for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
+    for i in $(psql -v ON_ERROR_STOP=1 -q -AXtc "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
       SEGMENT_HOST=$(echo $i | awk -F '|' '{print $2}')
       PRIMARY_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
       GEN_DATA_PATH=$PRIMARY_DATA_PATH/pivotalguru
@@ -91,7 +91,7 @@ start_gpfdist()
 	stop_gpfdist
 	sleep 1
 	if [ "$VERSION" == "gpdb_6" -o "$VERSION" == "gpdb_7" ]; then
-		for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
+		for i in $(psql -v ON_ERROR_STOP=1 -q -AXtc "select rank() over (partition by g.hostname order by g.datadir), g.hostname, g.datadir from gp_segment_configuration g where g.content >= 0 and g.role = 'p' order by g.hostname"); do
 			CHILD=$(echo $i | awk -F '|' '{print $1}')
 			EXT_HOST=$(echo $i | awk -F '|' '{print $2}')
 			GEN_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
@@ -102,7 +102,7 @@ start_gpfdist()
 			sleep 1
 		done
 	else
-		for i in $(psql -v ON_ERROR_STOP=1 -q -A -t -c "select rank() over (partition by g.hostname order by p.fselocation), g.hostname, p.fselocation as path from gp_segment_configuration g join pg_filespace_entry p on g.dbid = p.fsedbid join pg_tablespace t on t.spcfsoid = p.fsefsoid where g.content >= 0 and g.role = 'p' and t.spcname = 'pg_default' order by g.hostname"); do
+		for i in $(psql -v ON_ERROR_STOP=1 -q -AXtc "select rank() over (partition by g.hostname order by p.fselocation), g.hostname, p.fselocation as path from gp_segment_configuration g join pg_filespace_entry p on g.dbid = p.fsedbid join pg_tablespace t on t.spcfsoid = p.fsefsoid where g.content >= 0 and g.role = 'p' and t.spcname = 'pg_default' order by g.hostname"); do
 			CHILD=$(echo $i | awk -F '|' '{print $1}')
 			EXT_HOST=$(echo $i | awk -F '|' '{print $2}')
 			GEN_DATA_PATH=$(echo $i | awk -F '|' '{print $3}')
@@ -124,7 +124,7 @@ wait_mxgate_done()
 	while [ "$tuples" -gt "$start_count" ]; do
 		echo -ne "."
 		sleep 5
-		tuples=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
+		tuples=$(psql -v ON_ERROR_STOP=1 -AXtc "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
 	done
 
 	echo ""
@@ -134,7 +134,7 @@ wait_mxgate_done()
 
 if [[ "$VERSION" == *"gpdb"* ]]; then
   if [[ "$DATABASE_TYPE" == "matrixdb" && "$LOAD_DATA_TYPE" == "mxgate" ]]; then
-	start_count=$(psql -v ON_ERROR_STOP=1 -t -A -c "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
+	start_count=$(psql -v ON_ERROR_STOP=1 -AXtc "select count(*) from pg_stat_activity where application_name = 'matrixgate'")
   	do_mxgate_import
 	wait_mxgate_done
   else
@@ -238,13 +238,14 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
 	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"analyze fullscan $schema_name.$t;\""
     psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan $schema_name.$t;"
 	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"vacuum full ${schema_name}.${t};vacuum ${schema_name}.${t};\""
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum full ${schema_name}.${t};vacuum ${schema_name}.${t};"
+    psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum full ${schema_name}.${t};"
+	psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum ${schema_name}.${t};"
   done
 	tuples="0"
 	log $tuples
 else
 	#postgresql analyze
-	for t in $(psql -v ON_ERROR_STOP=1 -q -t -A -c "select n.nspname, c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'tpch' and c.relkind='r'"); do
+	for t in $(psql -v ON_ERROR_STOP=1 -q -AXtc "select n.nspname, c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'tpch' and c.relkind='r'"); do
 		start_log
 		schema_name=$(echo $t | awk -F '|' '{print $1}')
 		table_name=$(echo $t | awk -F '|' '{print $2}')
