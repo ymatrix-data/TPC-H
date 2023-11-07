@@ -41,7 +41,7 @@ if [ "$RUN_SINGLE_USER_REPORT" == "true" ]; then
     echo ""
   done
 
-  psql -v ON_ERROR_STOP=1 -q -t -A -c -X "select 'analyze ' || n.nspname || '.' || c.relname || ';' from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'tpch_reports'" | psql -v ON_ERROR_STOP=1 -t -A -e -X
+  psql -v ON_ERROR_STOP=1 -q -t -A -X -c "select 'analyze ' || n.nspname || '.' || c.relname || ';' from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'tpch_reports'" | psql -v ON_ERROR_STOP=1 -t -X -A -e 
 
   echo "********************************************************************************"
   echo "Generate Data"

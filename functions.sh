@@ -115,7 +115,7 @@ create_hosts_file()
 	get_version
 
 	if [[ "$VERSION" == *"gpdb"* ]]; then
-		psql -v ON_ERROR_STOP=1 -t -A -c "SELECT DISTINCT hostname FROM gp_segment_configuration WHERE role = 'p' AND content >= 0" -o $LOCAL_PWD/segment_hosts.txt
+		psql -v ON_ERROR_STOP=1 -t -A -X -c "SELECT DISTINCT hostname FROM gp_segment_configuration WHERE role = 'p' AND content >= 0" -o $LOCAL_PWD/segment_hosts.txt
 	else
 		#must be PostgreSQL
 		echo $MASTER_HOST > $LOCAL_PWD/segment_hosts.txt
