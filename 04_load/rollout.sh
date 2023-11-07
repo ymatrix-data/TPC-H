@@ -235,11 +235,11 @@ if [[ "$VERSION" == *"gpdb"* ]]; then
 	tables=(region nation customer supplier part partsupp orders lineitem)
 	for t in "${tables[@]}"
 	do
-	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"analyze fullscan $schema_name.$t;\""
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "analyze fullscan $schema_name.$t;"
-	echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"vacuum full ${schema_name}.${t};vacuum ${schema_name}.${t};\""
-    psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum full ${schema_name}.${t};"
-	psql -v ON_ERROR_STOP=1 -q -t -A -c "vacuum ${schema_name}.${t};"
+	echo "psql -v ON_ERROR_STOP=1 -q -AXtc \"analyze fullscan $schema_name.$t;\""
+    psql -v ON_ERROR_STOP=1 -q -AXtc "analyze fullscan $schema_name.$t;"
+	echo "psql -v ON_ERROR_STOP=1 -q -AXtc \"vacuum full ${schema_name}.${t};vacuum ${schema_name}.${t};\""
+    psql -v ON_ERROR_STOP=1 -q -AXtc "vacuum full ${schema_name}.${t};"
+	psql -v ON_ERROR_STOP=1 -q -AXtc "vacuum ${schema_name}.${t};"
   done
 	tuples="0"
 	log $tuples
@@ -249,8 +249,8 @@ else
 		start_log
 		schema_name=$(echo $t | awk -F '|' '{print $1}')
 		table_name=$(echo $t | awk -F '|' '{print $2}')
-		echo "psql -v ON_ERROR_STOP=1 -q -t -A -c \"ANALYZE $schema_name.$table_name;\""
-		psql -v ON_ERROR_STOP=1 -q -t -A -c "ANALYZE $schema_name.$table_name;"
+		echo "psql -v ON_ERROR_STOP=1 -q -AXtc \"ANALYZE $schema_name.$table_name;\""
+		psql -v ON_ERROR_STOP=1 -q -AXtc "ANALYZE $schema_name.$table_name;"
 		tuples="0"
 		log $tuples
 		i=$((i+1))
