@@ -27,8 +27,8 @@ if [ "$RUN_SINGLE_USER_REPORT" == "true" ]; then
   fi
 
   for i in $(ls $PWD/*.$filter.*.sql); do
-    echo "psql -v ON_ERROR_STOP=1 -a -f $i"
-    psql -v ON_ERROR_STOP=1 -a -f $i
+    echo "psql -v ON_ERROR_STOP=1 -X -a -f $i"
+    psql -v ON_ERROR_STOP=1 -X -a -f $i
     echo ""
   done
 
@@ -36,12 +36,12 @@ if [ "$RUN_SINGLE_USER_REPORT" == "true" ]; then
     logstep=$(echo $i | awk -F 'copy.' '{print $2}' | awk -F '.' '{print $1}')
     logfile="$GEN_DATA_DIR/log/rollout_""$logstep"".log"
     logfile="'""$logfile""'"
-    echo "psql -v ON_ERROR_STOP=1 -a -f $i -v LOGFILE=\"$logfile\""
-    psql -v ON_ERROR_STOP=1 -a -f $i -v LOGFILE="$logfile"
+    echo "psql -v ON_ERROR_STOP=1 -X -a -f $i -v LOGFILE=\"$logfile\""
+    psql -v ON_ERROR_STOP=1 -X -a -f $i -v LOGFILE="$logfile"
     echo ""
   done
 
-  psql -v ON_ERROR_STOP=1 -q -t -A -c "select 'analyze ' || n.nspname || '.' || c.relname || ';' from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'tpch_reports'" | psql -v ON_ERROR_STOP=1 -t -A -e
+  psql -v ON_ERROR_STOP=1 -q -t -A -c -X "select 'analyze ' || n.nspname || '.' || c.relname || ';' from pg_class c join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'tpch_reports'" | psql -v ON_ERROR_STOP=1 -t -A -e -X
 
   echo "********************************************************************************"
   echo "Generate Data"
